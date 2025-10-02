@@ -1,1 +1,97 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>유전 가계도 분석 연습</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧬 유전 가계도 분석 연습</h1>
+            <p class="subtitle">가계도를 보고 각 개체의 유전자형을 분석해보세요!</p>
+        </header>
 
+        <div class="main-content">
+            <div class="instructions">
+                <h3>📝 사용 방법</h3>
+                <ol>
+                    <li><strong>문제 선택</strong>: 아래에서 원하는 가계도 문제를 선택하세요</li>
+                    <li><strong>가계도 분석</strong>: 가계도를 보고 유전 방식을 파악하세요 (우성/열성, 상염색체)</li>
+                    <li><strong>유전자형 입력</strong>: 각 개체의 유전자형을 AA, Aa, aa 또는 "모름"으로 선택</li>
+                    <li><strong>제출 및 채점</strong>: "채점하기" 버튼으로 정답 확인!</li>
+                </ol>
+            </div>
+
+            <div class="problem-selector">
+                <h3>📚 문제 선택</h3>
+                <div class="problem-grid" id="problemGrid"></div>
+            </div>
+
+            <div id="currentProblem" style="display: none;">
+                <div class="problem-header">
+                    <h2 id="problemTitle"></h2>
+                    <p id="problemDescription"></p>
+                </div>
+
+                <div class="canvas-container">
+                    <canvas id="pedigreeCanvas" width="900" height="600"></canvas>
+                </div>
+
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="symbol male-normal"></div>
+                        <span>우성 형질 남성</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="symbol male-affected"></div>
+                        <span>열성 형질 남성</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="symbol female-normal"></div>
+                        <span>우성 형질 여성</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="symbol female-affected"></div>
+                        <span>열성 형질 여성</span>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <button class="btn-warning" onclick="showHintBox()">
+                        💡 힌트
+                    </button>
+                    <button class="btn-success" onclick="checkAnswers()">
+                        ✓ 채점하기
+                    </button>
+                    <button class="btn-secondary" onclick="resetProblem()">
+                        🔄 다시 풀기
+                    </button>
+                </div>
+
+                <div class="analysis-panel">
+                    <h2 class="analysis-title">🔬 유전자형 분석</h2>
+                    <div id="memberList" class="member-list"></div>
+                </div>
+
+                <div id="hintBox" class="hint-box" style="display: none;">
+                    <h3>💡 분석 힌트</h3>
+                    <ul>
+                        <li><strong>먼저 확실한 것부터 찾아보세요!</strong></li>
+                        <li>형질을 보유한 개체(빗금 표시)는 열성 동형접합(aa)입니다</li>
+                        <li>형질 보유자의 부모는 반드시 열성 유전자(a)를 하나씩 가지고 있습니다</li>
+                        <li>정상인 부모에게서 형질 보유 자녀가 나왔다면 → 열성 유전입니다</li>
+                        <li>정상인 부모(Aa × Aa)의 정상 자녀는 AA 또는 Aa일 수 있습니다</li>
+                        <li>형질 보유자가 정상인과 결혼해서 자녀가 모두 정상이면 → 정상인은 AA입니다</li>
+                    </ul>
+                </div>
+
+                <div id="results" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
