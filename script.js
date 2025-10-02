@@ -1,267 +1,386 @@
-// 가계도 문제 데이터
+// 가계도 문제 데이터 - 모두 3세대 가정형
 const problems = [
     {
         id: 1,
-        title: "문제 1: 기본 열성 유전",
+        title: "문제 1: 기본 3세대 (양쪽 조부모)",
         difficulty: "easy",
-        description: "우성 형질을 가진 부모에게서 열성 형질을 가진 자녀가 태어났습니다. 각 개체의 유전자형을 분석하세요.",
+        description: "양쪽 조부모가 모두 있는 3세대 가계도입니다. 열성 형질의 유전 양상을 분석하세요.",
         members: [
-            { id: 1, x: 300, y: 100, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 2, x: 400, y: 100, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 3, x: 250, y: 250, gender: 'male', affected: false, genotype: 'AA' },
-            { id: 4, x: 350, y: 250, gender: 'female', affected: true, genotype: 'aa' },
-            { id: 5, x: 450, y: 250, gender: 'male', affected: false, genotype: 'Aa' }
+            // 1세대 - 조부모
+            { id: 1, x: 200, y: 80, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 2, x: 300, y: 80, gender: 'female', affected: false, genotype: 'Aa' },
+            { id: 3, x: 600, y: 80, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 4, x: 700, y: 80, gender: 'female', affected: false, genotype: 'Aa' },
+            // 2세대 - 부모
+            { id: 5, x: 250, y: 220, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 6, x: 650, y: 220, gender: 'female', affected: false, genotype: 'Aa' },
+            // 3세대 - 자녀
+            { id: 7, x: 350, y: 360, gender: 'male', affected: false, genotype: 'AA' },
+            { id: 8, x: 450, y: 360, gender: 'female', affected: true, genotype: 'aa' },
+            { id: 9, x: 550, y: 360, gender: 'male', affected: false, genotype: 'Aa' }
         ],
         connections: [
             { from: 1, to: 2, type: 'marriage' },
-            { parent1: 1, parent2: 2, children: [3, 4, 5] }
+            { from: 3, to: 4, type: 'marriage' },
+            { from: 5, to: 6, type: 'marriage' },
+            { parent1: 1, parent2: 2, children: [5] },
+            { parent1: 3, parent2: 4, children: [6] },
+            { parent1: 5, parent2: 6, children: [7, 8, 9] }
         ]
     },
     {
         id: 2,
-        title: "문제 2: 2세대 가계도",
+        title: "문제 2: 한쪽 조부모만 있는 가계도",
         difficulty: "easy",
-        description: "열성 형질 보유자와 우성 형질 보유자의 결혼으로 태어난 자녀들을 분석하세요.",
+        description: "아버지 쪽 조부모만 있는 3세대 가계도입니다.",
         members: [
-            { id: 1, x: 300, y: 100, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 2, x: 400, y: 100, gender: 'female', affected: false, genotype: 'AA' },
-            { id: 3, x: 250, y: 250, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 4, x: 350, y: 250, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 5, x: 450, y: 250, gender: 'male', affected: false, genotype: 'Aa' }
+            // 1세대
+            { id: 1, x: 250, y: 80, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 2, x: 350, y: 80, gender: 'female', affected: false, genotype: 'Aa' },
+            // 2세대
+            { id: 3, x: 300, y: 220, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 4, x: 500, y: 220, gender: 'female', affected: true, genotype: 'aa' },
+            // 3세대
+            { id: 5, x: 300, y: 360, gender: 'female', affected: false, genotype: 'Aa' },
+            { id: 6, x: 400, y: 360, gender: 'male', affected: true, genotype: 'aa' },
+            { id: 7, x: 500, y: 360, gender: 'female', affected: false, genotype: 'Aa' }
         ],
         connections: [
             { from: 1, to: 2, type: 'marriage' },
-            { parent1: 1, parent2: 2, children: [3, 4, 5] }
+            { from: 3, to: 4, type: 'marriage' },
+            { parent1: 1, parent2: 2, children: [3] },
+            { parent1: 3, parent2: 4, children: [5, 6, 7] }
         ]
     },
     {
         id: 3,
-        title: "문제 3: 복잡한 2세대",
+        title: "문제 3: 두 가족의 3세대",
         difficulty: "medium",
-        description: "두 쌍의 부부가 있는 가계도입니다. 형질의 유전 방식을 파악하세요.",
+        description: "2세대에 형제가 각각 결혼하여 자녀를 둔 복잡한 가계도입니다.",
         members: [
-            { id: 1, x: 200, y: 80, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 2, x: 300, y: 80, gender: 'female', affected: true, genotype: 'aa' },
-            { id: 3, x: 500, y: 80, gender: 'male', affected: false, genotype: 'AA' },
-            { id: 4, x: 600, y: 80, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 5, x: 150, y: 220, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 6, x: 250, y: 220, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 7, x: 550, y: 220, gender: 'male', affected: false, genotype: 'AA' },
-            { id: 8, x: 650, y: 220, gender: 'female', affected: false, genotype: 'Aa' }
+            // 1세대
+            { id: 1, x: 250, y: 60, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 2, x: 350, y: 60, gender: 'female', affected: false, genotype: 'Aa' },
+            { id: 3, x: 550, y: 60, gender: 'male', affected: false, genotype: 'AA' },
+            { id: 4, x: 650, y: 60, gender: 'female', affected: false, genotype: 'Aa' },
+            // 2세대
+            { id: 5, x: 200, y: 200, gender: 'male', affected: false, genotype: 'AA' },
+            { id: 6, x: 300, y: 200, gender: 'female', affected: true, genotype: 'aa' },
+            { id: 7, x: 400, y: 200, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 8, x: 500, y: 200, gender: 'female', affected: false, genotype: 'Aa' },
+            // 3세대
+            { id: 9, x: 150, y: 340, gender: 'female', affected: false, genotype: 'Aa' },
+            { id: 10, x: 250, y: 340, gender: 'male', affected: true, genotype: 'aa' },
+            { id: 11, x: 400, y: 340, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 12, x: 500, y: 340, gender: 'female', affected: false, genotype: 'Aa' }
         ],
         connections: [
             { from: 1, to: 2, type: 'marriage' },
             { from: 3, to: 4, type: 'marriage' },
-            { parent1: 1, parent2: 2, children: [5, 6] },
-            { parent1: 3, parent2: 4, children: [7, 8] }
+            { from: 5, to: 6, type: 'marriage' },
+            { from: 7, to: 8, type: 'marriage' },
+            { parent1: 1, parent2: 2, children: [5, 7] },
+            { parent1: 3, parent2: 4, children: [8] },
+            { parent1: 5, parent2: 6, children: [9, 10] },
+            { parent1: 7, parent2: 8, children: [11, 12] }
         ]
     },
     {
         id: 4,
-        title: "문제 4: 3세대 가계도 (기본)",
+        title: "문제 4: 대가족 3세대",
         difficulty: "medium",
-        description: "3세대에 걸친 유전 양상을 분석하세요. 확실한 것부터 찾아보세요!",
+        description: "3세대에 많은 자녀가 있는 대가족 가계도입니다.",
         members: [
-            { id: 1, x: 350, y: 70, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 2, x: 450, y: 70, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 3, x: 300, y: 200, gender: 'male', affected: false, genotype: 'AA' },
-            { id: 4, x: 400, y: 200, gender: 'female', affected: true, genotype: 'aa' },
-            { id: 5, x: 500, y: 200, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 6, x: 250, y: 350, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 7, x: 350, y: 350, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 8, x: 450, y: 350, gender: 'female', affected: false, genotype: 'Aa' }
+            // 1세대
+            { id: 1, x: 200, y: 70, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 2, x: 300, y: 70, gender: 'female', affected: false, genotype: 'Aa' },
+            { id: 3, x: 600, y: 70, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 4, x: 700, y: 70, gender: 'female', affected: false, genotype: 'Aa' },
+            // 2세대
+            { id: 5, x: 250, y: 210, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 6, x: 650, y: 210, gender: 'female', affected: false, genotype: 'Aa' },
+            // 3세대
+            { id: 7, x: 250, y: 350, gender: 'male', affected: false, genotype: 'AA' },
+            { id: 8, x: 350, y: 350, gender: 'female', affected: false, genotype: 'Aa' },
+            { id: 9, x: 450, y: 350, gender: 'male', affected: true, genotype: 'aa' },
+            { id: 10, x: 550, y: 350, gender: 'female', affected: false, genotype: 'Aa' },
+            { id: 11, x: 650, y: 350, gender: 'male', affected: false, genotype: 'AA' }
         ],
         connections: [
             { from: 1, to: 2, type: 'marriage' },
-            { parent1: 1, parent2: 2, children: [3, 4, 5] },
             { from: 3, to: 4, type: 'marriage' },
-            { parent1: 3, parent2: 4, children: [6, 7, 8] }
+            { from: 5, to: 6, type: 'marriage' },
+            { parent1: 1, parent2: 2, children: [5] },
+            { parent1: 3, parent2: 4, children: [6] },
+            { parent1: 5, parent2: 6, children: [7, 8, 9, 10, 11] }
         ]
     },
     {
         id: 5,
-        title: "문제 5: 열성 형질 보유자가 많은 가계도",
+        title: "문제 5: 열성 형질이 많은 가계도",
         difficulty: "medium",
-        description: "여러 개체가 열성 형질을 보유하고 있습니다. 유전자형을 정확히 판단하세요.",
+        description: "여러 세대에 걸쳐 열성 형질 보유자가 나타나는 가계도입니다.",
         members: [
-            { id: 1, x: 250, y: 80, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 2, x: 350, y: 80, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 3, x: 550, y: 80, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 4, x: 650, y: 80, gender: 'female', affected: true, genotype: 'aa' },
-            { id: 5, x: 200, y: 220, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 6, x: 300, y: 220, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 7, x: 400, y: 220, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 8, x: 600, y: 220, gender: 'female', affected: true, genotype: 'aa' },
-            { id: 9, x: 700, y: 220, gender: 'male', affected: false, genotype: 'Aa' }
+            // 1세대
+            { id: 1, x: 200, y: 70, gender: 'male', affected: true, genotype: 'aa' },
+            { id: 2, x: 300, y: 70, gender: 'female', affected: false, genotype: 'Aa' },
+            { id: 3, x: 600, y: 70, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 4, x: 700, y: 70, gender: 'female', affected: true, genotype: 'aa' },
+            // 2세대
+            { id: 5, x: 250, y: 210, gender: 'male', affected: true, genotype: 'aa' },
+            { id: 6, x: 650, y: 210, gender: 'female', affected: true, genotype: 'aa' },
+            // 3세대
+            { id: 7, x: 350, y: 350, gender: 'female', affected: true, genotype: 'aa' },
+            { id: 8, x: 450, y: 350, gender: 'male', affected: true, genotype: 'aa' },
+            { id: 9, x: 550, y: 350, gender: 'female', affected: true, genotype: 'aa' }
         ],
         connections: [
             { from: 1, to: 2, type: 'marriage' },
             { from: 3, to: 4, type: 'marriage' },
-            { parent1: 1, parent2: 2, children: [5, 6, 7] },
-            { parent1: 3, parent2: 4, children: [8, 9] }
+            { from: 5, to: 6, type: 'marriage' },
+            { parent1: 1, parent2: 2, children: [5] },
+            { parent1: 3, parent2: 4, children: [6] },
+            { parent1: 5, parent2: 6, children: [7, 8, 9] }
         ]
     },
     {
         id: 6,
-        title: "문제 6: 3세대 확장형",
+        title: "문제 6: 복잡한 양쪽 조부모",
         difficulty: "hard",
-        description: "3세대에 걸쳐 여러 가족이 있는 복잡한 가계도입니다.",
+        description: "양쪽 조부모가 모두 있고 2세대에 형제자매가 있는 복잡한 가계도입니다.",
         members: [
-            { id: 1, x: 350, y: 60, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 2, x: 450, y: 60, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 3, x: 250, y: 180, gender: 'male', affected: false, genotype: 'AA' },
-            { id: 4, x: 350, y: 180, gender: 'female', affected: true, genotype: 'aa' },
-            { id: 5, x: 450, y: 180, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 6, x: 550, y: 180, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 7, x: 200, y: 320, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 8, x: 300, y: 320, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 9, x: 400, y: 320, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 10, x: 500, y: 320, gender: 'male', affected: false, genotype: 'AA' },
-            { id: 11, x: 600, y: 320, gender: 'female', affected: true, genotype: 'aa' }
+            // 1세대
+            { id: 1, x: 150, y: 60, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 2, x: 250, y: 60, gender: 'female', affected: false, genotype: 'Aa' },
+            { id: 3, x: 650, y: 60, gender: 'male', affected: false, genotype: 'AA' },
+            { id: 4, x: 750, y: 60, gender: 'female', affected: false, genotype: 'Aa' },
+            // 2세대
+            { id: 5, x: 150, y: 200, gender: 'male', affected: false, genotype: 'AA' },
+            { id: 6, x: 250, y: 200, gender: 'female', affected: true, genotype: 'aa' },
+            { id: 7, x: 350, y: 200, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 8, x: 650, y: 200, gender: 'female', affected: false, genotype: 'Aa' },
+            // 3세대
+            { id: 9, x: 200, y: 340, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 10, x: 300, y: 340, gender: 'female', affected: true, genotype: 'aa' },
+            { id: 11, x: 450, y: 340, gender: 'female', affected: false, genotype: 'Aa' },
+            { id: 12, x: 550, y: 340, gender: 'male', affected: false, genotype: 'AA' }
         ],
         connections: [
             { from: 1, to: 2, type: 'marriage' },
-            { parent1: 1, parent2: 2, children: [3, 4, 5, 6] },
             { from: 3, to: 4, type: 'marriage' },
             { from: 5, to: 6, type: 'marriage' },
-            { parent1: 3, parent2: 4, children: [7, 8, 9] },
-            { parent1: 5, parent2: 6, children: [10, 11] }
+            { from: 7, to: 8, type: 'marriage' },
+            { parent1: 1, parent2: 2, children: [5, 6] },
+            { parent1: 3, parent2: 4, children: [8] },
+            { parent1: 5, parent2: 6, children: [9, 10] },
+            { parent1: 7, parent2: 8, children: [11, 12] }
         ]
     },
     {
         id: 7,
         title: "문제 7: 격세유전 패턴",
         difficulty: "medium",
-        description: "1세대는 우성, 2세대에 열성 형질 보유자가 나타납니다.",
+        description: "1세대는 우성, 2세대도 우성, 3세대에 열성이 나타나는 가계도입니다.",
         members: [
-            { id: 1, x: 300, y: 80, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 2, x: 400, y: 80, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 3, x: 200, y: 220, gender: 'male', affected: false, genotype: 'AA' },
-            { id: 4, x: 300, y: 220, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 5, x: 400, y: 220, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 6, x: 500, y: 220, gender: 'female', affected: false, genotype: 'Aa' }
-        ],
-        connections: [
-            { from: 1, to: 2, type: 'marriage' },
-            { parent1: 1, parent2: 2, children: [3, 4, 5, 6] }
-        ]
-    },
-    {
-        id: 8,
-        title: "문제 8: 간단한 가계도",
-        difficulty: "easy",
-        description: "열성 형질 보유자가 한 명만 있는 간단한 가계도입니다.",
-        members: [
-            { id: 1, x: 300, y: 100, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 2, x: 400, y: 100, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 3, x: 250, y: 250, gender: 'male', affected: false, genotype: 'AA' },
-            { id: 4, x: 350, y: 250, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 5, x: 450, y: 250, gender: 'male', affected: true, genotype: 'aa' }
-        ],
-        connections: [
-            { from: 1, to: 2, type: 'marriage' },
-            { parent1: 1, parent2: 2, children: [3, 4, 5] }
-        ]
-    },
-    {
-        id: 9,
-        title: "문제 9: 혼합형 가계도",
-        difficulty: "hard",
-        description: "복잡한 가계도입니다. 각 세대별로 신중하게 분석하세요.",
-        members: [
-            { id: 1, x: 200, y: 60, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 2, x: 300, y: 60, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 3, x: 500, y: 60, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 4, x: 600, y: 60, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 5, x: 150, y: 200, gender: 'female', affected: false, genotype: 'AA' },
-            { id: 6, x: 250, y: 200, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 7, x: 350, y: 200, gender: 'female', affected: true, genotype: 'aa' },
-            { id: 8, x: 550, y: 200, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 9, x: 650, y: 200, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 10, x: 200, y: 350, gender: 'male', affected: false, genotype: 'AA' },
-            { id: 11, x: 300, y: 350, gender: 'female', affected: true, genotype: 'aa' },
-            { id: 12, x: 600, y: 350, gender: 'male', affected: false, genotype: 'Aa' }
+            // 1세대
+            { id: 1, x: 200, y: 70, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 2, x: 300, y: 70, gender: 'female', affected: false, genotype: 'Aa' },
+            { id: 3, x: 600, y: 70, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 4, x: 700, y: 70, gender: 'female', affected: false, genotype: 'Aa' },
+            // 2세대
+            { id: 5, x: 250, y: 210, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 6, x: 650, y: 210, gender: 'female', affected: false, genotype: 'Aa' },
+            // 3세대
+            { id: 7, x: 300, y: 350, gender: 'female', affected: false, genotype: 'AA' },
+            { id: 8, x: 400, y: 350, gender: 'male', affected: true, genotype: 'aa' },
+            { id: 9, x: 500, y: 350, gender: 'female', affected: false, genotype: 'Aa' },
+            { id: 10, x: 600, y: 350, gender: 'male', affected: false, genotype: 'Aa' }
         ],
         connections: [
             { from: 1, to: 2, type: 'marriage' },
             { from: 3, to: 4, type: 'marriage' },
-            { parent1: 1, parent2: 2, children: [5, 6, 7] },
-            { parent1: 3, parent2: 4, children: [8, 9] },
             { from: 5, to: 6, type: 'marriage' },
-            { from: 8, to: 9, type: 'marriage' },
-            { parent1: 5, parent2: 6, children: [10, 11] },
-            { parent1: 8, parent2: 9, children: [12] }
+            { parent1: 1, parent2: 2, children: [5] },
+            { parent1: 3, parent2: 4, children: [6] },
+            { parent1: 5, parent2: 6, children: [7, 8, 9, 10] }
+        ]
+    },
+    {
+        id: 8,
+        title: "문제 8: 어머니 쪽 조부모만",
+        difficulty: "easy",
+        description: "어머니 쪽 조부모만 있는 3세대 가계도입니다.",
+        members: [
+            // 1세대
+            { id: 1, x: 550, y: 80, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 2, x: 650, y: 80, gender: 'female', affected: false, genotype: 'Aa' },
+            // 2세대
+            { id: 3, x: 300, y: 220, gender: 'male', affected: false, genotype: 'AA' },
+            { id: 4, x: 600, y: 220, gender: 'female', affected: false, genotype: 'Aa' },
+            // 3세대
+            { id: 5, x: 350, y: 360, gender: 'male', affected: false, genotype: 'AA' },
+            { id: 6, x: 450, y: 360, gender: 'female', affected: false, genotype: 'Aa' },
+            { id: 7, x: 550, y: 360, gender: 'male', affected: true, genotype: 'aa' }
+        ],
+        connections: [
+            { from: 1, to: 2, type: 'marriage' },
+            { from: 3, to: 4, type: 'marriage' },
+            { parent1: 1, parent2: 2, children: [4] },
+            { parent1: 3, parent2: 4, children: [5, 6, 7] }
+        ]
+    },
+    {
+        id: 9,
+        title: "문제 9: 3가족 확장형",
+        difficulty: "hard",
+        description: "2세대에 3명의 형제자매가 각각 가정을 꾸린 대가족입니다.",
+        members: [
+            // 1세대
+            { id: 1, x: 250, y: 50, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 2, x: 350, y: 50, gender: 'female', affected: false, genotype: 'Aa' },
+            { id: 3, x: 550, y: 50, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 4, x: 650, y: 50, gender: 'female', affected: false, genotype: 'Aa' },
+            { id: 5, x: 850, y: 50, gender: 'male', affected: false, genotype: 'AA' },
+            { id: 6, x: 950, y: 50, gender: 'female', affected: false, genotype: 'Aa' },
+            // 2세대
+            { id: 7, x: 200, y: 190, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 8, x: 400, y: 190, gender: 'female', affected: false, genotype: 'Aa' },
+            { id: 9, x: 600, y: 190, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 10, x: 800, y: 190, gender: 'female', affected: false, genotype: 'Aa' },
+            // 3세대
+            { id: 11, x: 150, y: 330, gender: 'female', affected: false, genotype: 'AA' },
+            { id: 12, x: 250, y: 330, gender: 'male', affected: true, genotype: 'aa' },
+            { id: 13, x: 500, y: 330, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 14, x: 600, y: 330, gender: 'female', affected: true, genotype: 'aa' },
+            { id: 15, x: 800, y: 330, gender: 'male', affected: false, genotype: 'AA' }
+        ],
+        connections: [
+            { from: 1, to: 2, type: 'marriage' },
+            { from: 3, to: 4, type: 'marriage' },
+            { from: 5, to: 6, type: 'marriage' },
+            { from: 7, to: 8, type: 'marriage' },
+            { from: 9, to: 10, type: 'marriage' },
+            { parent1: 1, parent2: 2, children: [7] },
+            { parent1: 3, parent2: 4, children: [8, 9] },
+            { parent1: 5, parent2: 6, children: [10] },
+            { parent1: 7, parent2: 8, children: [11, 12] },
+            { parent1: 9, parent2: 10, children: [13, 14] },
+            { parent1: 9, parent2: 10, children: [15] }
         ]
     },
     {
         id: 10,
-        title: "문제 10: 대가족 가계도",
+        title: "문제 10: 양쪽 대가족",
         difficulty: "hard",
-        description: "여러 명의 자녀가 있는 대가족입니다. 유전자형을 꼼꼼히 분석하세요.",
+        description: "양쪽 조부모의 자녀가 많고 3세대도 많은 복잡한 대가족입니다.",
         members: [
-            { id: 1, x: 400, y: 80, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 2, x: 500, y: 80, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 3, x: 200, y: 240, gender: 'male', affected: false, genotype: 'AA' },
-            { id: 4, x: 300, y: 240, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 5, x: 400, y: 240, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 6, x: 500, y: 240, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 7, x: 600, y: 240, gender: 'male', affected: false, genotype: 'AA' },
-            { id: 8, x: 700, y: 240, gender: 'female', affected: true, genotype: 'aa' }
+            // 1세대
+            { id: 1, x: 150, y: 60, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 2, x: 250, y: 60, gender: 'female', affected: false, genotype: 'Aa' },
+            { id: 3, x: 650, y: 60, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 4, x: 750, y: 60, gender: 'female', affected: false, genotype: 'Aa' },
+            // 2세대
+            { id: 5, x: 100, y: 200, gender: 'male', affected: false, genotype: 'AA' },
+            { id: 6, x: 200, y: 200, gender: 'female', affected: false, genotype: 'Aa' },
+            { id: 7, x: 300, y: 200, gender: 'male', affected: true, genotype: 'aa' },
+            { id: 8, x: 550, y: 200, gender: 'female', affected: false, genotype: 'Aa' },
+            { id: 9, x: 650, y: 200, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 10, x: 750, y: 200, gender: 'female', affected: false, genotype: 'AA' },
+            // 3세대
+            { id: 11, x: 200, y: 340, gender: 'male', affected: false, genotype: 'AA' },
+            { id: 12, x: 300, y: 340, gender: 'female', affected: false, genotype: 'Aa' },
+            { id: 13, x: 500, y: 340, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 14, x: 600, y: 340, gender: 'female', affected: true, genotype: 'aa' },
+            { id: 15, x: 700, y: 340, gender: 'male', affected: false, genotype: 'Aa' }
         ],
         connections: [
             { from: 1, to: 2, type: 'marriage' },
-            { parent1: 1, parent2: 2, children: [3, 4, 5, 6, 7, 8] }
+            { from: 3, to: 4, type: 'marriage' },
+            { from: 5, to: 6, type: 'marriage' },
+            { from: 7, to: 8, type: 'marriage' },
+            { from: 9, to: 10, type: 'marriage' },
+            { parent1: 1, parent2: 2, children: [5, 6, 7] },
+            { parent1: 3, parent2: 4, children: [8, 9, 10] },
+            { parent1: 5, parent2: 6, children: [11, 12] },
+            { parent1: 7, parent2: 8, children: [13, 14] },
+            { parent1: 9, parent2: 10, children: [15] }
         ]
     },
     {
         id: 11,
-        title: "문제 11: 모두 우성인 가족",
-        difficulty: "easy",
-        description: "열성 형질 보유자가 없는 가족입니다. AA와 Aa를 구분할 수 있나요?",
+        title: "문제 11: 균형잡힌 3세대",
+        difficulty: "medium",
+        description: "양쪽이 균형잡힌 전형적인 3세대 가계도입니다.",
         members: [
-            { id: 1, x: 300, y: 100, gender: 'male', affected: false, genotype: 'AA' },
-            { id: 2, x: 400, y: 100, gender: 'female', affected: false, genotype: 'AA' },
-            { id: 3, x: 250, y: 250, gender: 'male', affected: false, genotype: 'AA' },
-            { id: 4, x: 350, y: 250, gender: 'female', affected: false, genotype: 'AA' },
-            { id: 5, x: 450, y: 250, gender: 'male', affected: false, genotype: 'AA' }
+            // 1세대
+            { id: 1, x: 200, y: 70, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 2, x: 300, y: 70, gender: 'female', affected: false, genotype: 'Aa' },
+            { id: 3, x: 600, y: 70, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 4, x: 700, y: 70, gender: 'female', affected: false, genotype: 'Aa' },
+            // 2세대
+            { id: 5, x: 250, y: 210, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 6, x: 350, y: 210, gender: 'female', affected: false, genotype: 'AA' },
+            { id: 7, x: 550, y: 210, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 8, x: 650, y: 210, gender: 'female', affected: false, genotype: 'Aa' },
+            // 3세대
+            { id: 9, x: 200, y: 350, gender: 'male', affected: false, genotype: 'AA' },
+            { id: 10, x: 300, y: 350, gender: 'female', affected: false, genotype: 'Aa' },
+            { id: 11, x: 500, y: 350, gender: 'male', affected: true, genotype: 'aa' },
+            { id: 12, x: 600, y: 350, gender: 'female', affected: false, genotype: 'Aa' },
+            { id: 13, x: 700, y: 350, gender: 'male', affected: false, genotype: 'Aa' }
         ],
         connections: [
             { from: 1, to: 2, type: 'marriage' },
-            { parent1: 1, parent2: 2, children: [3, 4, 5] }
+            { from: 3, to: 4, type: 'marriage' },
+            { from: 5, to: 6, type: 'marriage' },
+            { from: 7, to: 8, type: 'marriage' },
+            { parent1: 1, parent2: 2, children: [5, 6] },
+            { parent1: 3, parent2: 4, children: [7, 8] },
+            { parent1: 5, parent2: 6, children: [9, 10] },
+            { parent1: 7, parent2: 8, children: [11, 12, 13] }
         ]
     },
     {
         id: 12,
         title: "문제 12: 최종 도전",
         difficulty: "hard",
-        description: "4세대에 걸친 대가족 가계도입니다. 모든 분석 기술을 활용하세요!",
+        description: "4가족이 연결된 매우 복잡한 3세대 가계도입니다. 모든 분석 기술을 동원하세요!",
         members: [
-            { id: 1, x: 450, y: 50, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 2, x: 550, y: 50, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 3, x: 350, y: 160, gender: 'male', affected: false, genotype: 'AA' },
-            { id: 4, x: 450, y: 160, gender: 'female', affected: true, genotype: 'aa' },
-            { id: 5, x: 550, y: 160, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 6, x: 650, y: 160, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 7, x: 300, y: 290, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 8, x: 400, y: 290, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 9, x: 500, y: 290, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 10, x: 600, y: 290, gender: 'male', affected: false, genotype: 'AA' },
-            { id: 11, x: 700, y: 290, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 12, x: 350, y: 430, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 13, x: 450, y: 430, gender: 'female', affected: true, genotype: 'aa' },
-            { id: 14, x: 650, y: 430, gender: 'male', affected: false, genotype: 'AA' }
+            // 1세대
+            { id: 1, x: 150, y: 50, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 2, x: 250, y: 50, gender: 'female', affected: false, genotype: 'Aa' },
+            { id: 3, x: 450, y: 50, gender: 'male', affected: true, genotype: 'aa' },
+            { id: 4, x: 550, y: 50, gender: 'female', affected: false, genotype: 'Aa' },
+            { id: 5, x: 750, y: 50, gender: 'male', affected: false, genotype: 'AA' },
+            { id: 6, x: 850, y: 50, gender: 'female', affected: false, genotype: 'Aa' },
+            // 2세대
+            { id: 7, x: 100, y: 190, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 8, x: 200, y: 190, gender: 'female', affected: true, genotype: 'aa' },
+            { id: 9, x: 300, y: 190, gender: 'male', affected: false, genotype: 'AA' },
+            { id: 10, x: 450, y: 190, gender: 'female', affected: true, genotype: 'aa' },
+            { id: 11, x: 600, y: 190, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 12, x: 750, y: 190, gender: 'female', affected: false, genotype: 'Aa' },
+            // 3세대
+            { id: 13, x: 50, y: 330, gender: 'female', affected: false, genotype: 'Aa' },
+            { id: 14, x: 150, y: 330, gender: 'male', affected: true, genotype: 'aa' },
+            { id: 15, x: 300, y: 330, gender: 'female', affected: false, genotype: 'Aa' },
+            { id: 16, x: 450, y: 330, gender: 'male', affected: true, genotype: 'aa' },
+            { id: 17, x: 600, y: 330, gender: 'female', affected: false, genotype: 'Aa' },
+            { id: 18, x: 700, y: 330, gender: 'male', affected: false, genotype: 'AA' }
         ],
         connections: [
             { from: 1, to: 2, type: 'marriage' },
-            { parent1: 1, parent2: 2, children: [3, 4, 5, 6] },
             { from: 3, to: 4, type: 'marriage' },
             { from: 5, to: 6, type: 'marriage' },
-            { parent1: 3, parent2: 4, children: [7, 8, 9] },
-            { parent1: 5, parent2: 6, children: [10, 11] },
             { from: 7, to: 8, type: 'marriage' },
-            { from: 10, to: 11, type: 'marriage' },
-            { parent1: 7, parent2: 8, children: [12, 13] },
-            { parent1: 10, parent2: 11, children: [14] }
+            { from: 9, to: 10, type: 'marriage' },
+            { from: 11, to: 12, type: 'marriage' },
+            { parent1: 1, parent2: 2, children: [7, 8] },
+            { parent1: 3, parent2: 4, children: [9, 10] },
+            { parent1: 5, parent2: 6, children: [11, 12] },
+            { parent1: 7, parent2: 8, children: [13, 14] },
+            { parent1: 9, parent2: 10, children: [15, 16] },
+            { parent1: 11, parent2: 12, children: [17, 18] }
         ]
     }
 ];
@@ -269,6 +388,7 @@ const problems = [
 // 현재 선택된 문제
 let currentProblem = null;
 let userAnswers = {};
+let selectedMember = null;
 
 // 페이지 로드 시 문제 목록 표시
 window.addEventListener('DOMContentLoaded', () => {
@@ -306,6 +426,7 @@ function loadProblem(problemId) {
     if (!currentProblem) return;
 
     userAnswers = {};
+    selectedMember = null;
     
     document.getElementById('currentProblem').style.display = 'block';
     document.getElementById('problemTitle').textContent = currentProblem.title;
@@ -364,7 +485,15 @@ function drawPedigree() {
     // 개체 그리기
     currentProblem.members.forEach(member => {
         ctx.lineWidth = 3;
-        ctx.strokeStyle = '#2d3748';
+        
+        // 선택된 개체는 강조 표시
+        if (selectedMember === member.id) {
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = 5;
+        } else {
+            ctx.strokeStyle = '#2d3748';
+            ctx.lineWidth = 3;
+        }
 
         if (member.gender === 'male') {
             // 사각형
@@ -416,6 +545,53 @@ function createHatchPattern() {
     return patternCanvas;
 }
 
+// 캔버스 클릭 이벤트
+document.addEventListener('DOMContentLoaded', () => {
+    const canvas = document.getElementById('pedigreeCanvas');
+    
+    canvas.addEventListener('click', (e) => {
+        if (!currentProblem) return;
+        
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        // 클릭한 위치에 있는 개체 찾기
+        const clickedMember = currentProblem.members.find(member => {
+            const dx = x - member.x;
+            const dy = y - member.y;
+            return Math.sqrt(dx * dx + dy * dy) < 25;
+        });
+        
+        if (clickedMember) {
+            selectMember(clickedMember.id);
+        }
+    });
+});
+
+// 개체 선택
+function selectMember(memberId) {
+    selectedMember = memberId;
+    drawPedigree();
+    
+    // 해당 개체의 선택 박스로 스크롤
+    const selectElement = document.getElementById(`answer-${memberId}`);
+    if (selectElement) {
+        selectElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        selectElement.focus();
+        
+        // 선택 박스 강조 효과
+        const card = selectElement.closest('.member-card');
+        if (card) {
+            card.style.transform = 'scale(1.05)';
+            card.style.transition = 'transform 0.3s';
+            setTimeout(() => {
+                card.style.transform = 'scale(1)';
+            }, 500);
+        }
+    }
+}
+
 // 구성원 목록 업데이트
 function updateMemberList() {
     if (!currentProblem) return;
@@ -426,6 +602,7 @@ function updateMemberList() {
     currentProblem.members.forEach(member => {
         const card = document.createElement('div');
         card.className = `member-card ${member.affected ? 'affected' : ''}`;
+        card.id = `card-${member.id}`;
         
         const genderIcon = member.gender === 'male' ? '♂️' : '♀️';
         const genderClass = member.gender === 'male' ? 'male' : 'female';
@@ -444,6 +621,13 @@ function updateMemberList() {
                 <option value="unknown">모름</option>
             </select>
         `;
+        
+        // 카드 클릭시 해당 개체 선택
+        card.addEventListener('click', (e) => {
+            if (e.target.tagName !== 'SELECT') {
+                selectMember(member.id);
+            }
+        });
         
         list.appendChild(card);
     });
@@ -526,6 +710,7 @@ function resetProblem() {
     
     if (confirm('입력한 답변을 모두 지우고 다시 풀까요?')) {
         userAnswers = {};
+        selectedMember = null;
         
         // 모든 선택 박스 초기화
         currentProblem.members.forEach(member => {
@@ -537,5 +722,6 @@ function resetProblem() {
         
         document.getElementById('results').style.display = 'none';
         document.getElementById('hintBox').style.display = 'none';
+        drawPedigree();
     }
 }
