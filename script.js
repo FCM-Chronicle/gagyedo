@@ -697,13 +697,30 @@ function checkAnswers() {
 
     currentProblem.members.forEach(member => {
         const userAnswer = userAnswers[member.id];
-        if (userAnswer && userAnswer !== 'unknown') {
+        
+        // 답변을 입력한 경우만 채점 (빈 값은 제외)
+        if (userAnswer && userAnswer !== '') {
             total++;
-            if (userAnswer === member.genotype) {
-                correct++;
-                details.push(`<div class="result-item">개체 ${member.id}: ✅ 정답 (${member.genotype})</div>`);
+            
+            // "모름"을 선택한 경우 특별 처리
+            if (userAnswer === 'unknown') {
+                // 실제로 확정할 수 없는 경우인지 체크
+                const canBeDetermined = canDetermineGenotype(member);
+                
+                if (!canBeDetermined) {
+                    correct++;
+                    details.push(`<div class="result-item">개체 ${member.id}: ✅ 정답 - 확정할 수 없음 (실제: ${member.genotype} 또는 다른 가능성)</div>`);
+                } else {
+                    details.push(`<div class="result-item">개체 ${member.id}: ❌ 오답 - 확정 가능함, 정답: ${member.genotype}</div>`);
+                }
             } else {
-                details.push(`<div class="result-item">개체 ${member.id}: ❌ 오답 - 입력: ${userAnswer}, 정답: ${member.genotype}</div>`);
+                // 일반 답변 채점
+                if (userAnswer === member.genotype) {
+                    correct++;
+                    details.push(`<div class="result-item">개체 ${member.id}: ✅ 정답 (${member.genotype})</div>`);
+                } else {
+                    details.push(`<div class="result-item">개체 ${member.id}: ❌ 오답 - 입력: ${userAnswer}, 정답: ${member.genotype}</div>`);
+                }
             }
         }
     });
@@ -741,6 +758,115 @@ function checkAnswers() {
     
     // 결과로 스크롤
     resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// 유전자형을 확정할 수 있는지 판단
+function canDetermineGenotype(member) {
+    // 열성 형질을 보이면 무조건 aa
+    if (member.affected) {
+        return true;
+    }
+    
+    // 우성 형질을 보이는 경우
+    // 자식 중에 aa가 있으면 부모는 반드시 Aa
+    const hasAffectedChild = hasChildWithGenotype(member, 'aa');
+    if (hasAffectedChild) {
+        return true;
+    }
+    
+    // 부모가 모두 aa이면 자식은 무조건 aa (하지만 이 경우 affected이므로 위에서 걸림)
+    // 부모 중 한 명이 aa이고 자식이 우성이면 자식은 Aa
+    const hasAffectedParent = hasParentWithGenotype(member, 'aa');
+    if (hasAffectedParent) {
+        return true;
+    }
+    
+    // aa와 결혼해서 자식이 모두 우성이면 AA
+    const spouseIsAffected = isSpouseAffected(member);
+    const allChildrenUnaffected = areAllChildrenUnaffected(member);
+    if (spouseIsAffected && allChildrenUnaffected && hasChildren(member)) {
+        return true;
+    }
+    
+    // 그 외의 경우는 AA인지 Aa인지 확정할 수 없음
+    return false;
+}
+
+// 자식 중에 특정 유전자형이 있는지 확인
+function hasChildWithGenotype(member, genotype) {
+    const childConnections = currentProblem.connections.filter(conn => 
+        conn.parent1 === member.id || conn.parent2 === member.id
+    );
+    
+    for (const conn of childConnections) {
+        if (conn.children) {
+            for (const childId of conn.children) {
+                const child = currentProblem.members.find(m => m.id === childId);
+                if (child && child.genotype === genotype) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+// 부모 중에 특정 유전자형이 있는지 확인
+function hasParentWithGenotype(member, genotype) {
+    const parentConnection = currentProblem.connections.find(conn => 
+        conn.children && conn.children.includes(member.id)
+    );
+    
+    if (parentConnection) {
+        const parent1 = currentProblem.members.find(m => m.id === parentConnection.parent1);
+        const parent2 = currentProblem.members.find(m => m.id === parentConnection.parent2);
+        
+        if ((parent1 && parent1.genotype === genotype) || (parent2 && parent2.genotype === genotype)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// 배우자가 열성인지 확인
+function isSpouseAffected(member) {
+    const marriageConn = currentProblem.connections.find(conn => 
+        conn.type === 'marriage' && (conn.from === member.id || conn.to === member.id)
+    );
+    
+    if (marriageConn) {
+        const spouseId = marriageConn.from === member.id ? marriageConn.to : marriageConn.from;
+        const spouse = currentProblem.members.find(m => m.id === spouseId);
+        return spouse && spouse.affected;
+    }
+    return false;
+}
+
+// 모든 자식이 우성인지 확인
+function areAllChildrenUnaffected(member) {
+    const childConnections = currentProblem.connections.filter(conn => 
+        (conn.parent1 === member.id || conn.parent2 === member.id) && conn.children
+    );
+    
+    if (childConnections.length === 0) return false;
+    
+    for (const conn of childConnections) {
+        for (const childId of conn.children) {
+            const child = currentProblem.members.find(m => m.id === childId);
+            if (child && child.affected) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+// 자식이 있는지 확인
+function hasChildren(member) {
+    const childConnections = currentProblem.connections.filter(conn => 
+        (conn.parent1 === member.id || conn.parent2 === member.id) && conn.children
+    );
+    return childConnections.length > 0 && childConnections.some(conn => conn.children.length > 0);
 }
 
 // 힌트 보기
