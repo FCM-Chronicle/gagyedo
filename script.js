@@ -525,6 +525,14 @@ function drawPedigree() {
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(member.id, member.x, member.y);
+        
+        // 사용자가 입력한 유전자형 표시
+        const userAnswer = userAnswers[member.id];
+        if (userAnswer && userAnswer !== 'unknown') {
+            ctx.fillStyle = '#667eea';
+            ctx.font = 'bold 14px sans-serif';
+            ctx.fillText(userAnswer, member.x, member.y + 40);
+        }
     });
 }
 
@@ -564,32 +572,73 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         if (clickedMember) {
-            selectMember(clickedMember.id);
+            showDropdownAtMember(clickedMember, e.clientX, e.clientY);
+        } else {
+            hideDropdown();
         }
     });
 });
 
-// 개체 선택
-function selectMember(memberId) {
-    selectedMember = memberId;
+// 개체 위에 드롭다운 표시
+function showDropdownAtMember(member, clientX, clientY) {
+    selectedMember = member.id;
     drawPedigree();
     
-    // 해당 개체의 선택 박스로 스크롤
-    const selectElement = document.getElementById(`answer-${memberId}`);
-    if (selectElement) {
-        selectElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        selectElement.focus();
-        
-        // 선택 박스 강조 효과
-        const card = selectElement.closest('.member-card');
-        if (card) {
-            card.style.transform = 'scale(1.05)';
-            card.style.transition = 'transform 0.3s';
-            setTimeout(() => {
-                card.style.transform = 'scale(1)';
-            }, 500);
-        }
+    // 기존 드롭다운 제거
+    hideDropdown();
+    
+    // 새 드롭다운 생성
+    const dropdown = document.createElement('div');
+    dropdown.id = 'floating-dropdown';
+    dropdown.className = 'floating-dropdown';
+    
+    const currentAnswer = userAnswers[member.id] || '';
+    
+    dropdown.innerHTML = `
+        <div class="dropdown-header">개체 ${member.id}</div>
+        <select id="floating-select" onchange="saveAnswerFromDropdown(${member.id}, this.value)">
+            <option value="" ${currentAnswer === '' ? 'selected' : ''}>선택하세요</option>
+            <option value="AA" ${currentAnswer === 'AA' ? 'selected' : ''}>AA</option>
+            <option value="Aa" ${currentAnswer === 'Aa' ? 'selected' : ''}>Aa</option>
+            <option value="aa" ${currentAnswer === 'aa' ? 'selected' : ''}>aa</option>
+            <option value="unknown" ${currentAnswer === 'unknown' ? 'selected' : ''}>모름</option>
+        </select>
+    `;
+    
+    document.body.appendChild(dropdown);
+    
+    // 위치 설정 (개체 위쪽에 표시)
+    dropdown.style.left = `${clientX - 75}px`;
+    dropdown.style.top = `${clientY - 100}px`;
+    
+    // 드롭다운 포커스
+    const select = dropdown.querySelector('select');
+    setTimeout(() => select.focus(), 100);
+}
+
+// 드롭다운 숨기기
+function hideDropdown() {
+    const dropdown = document.getElementById('floating-dropdown');
+    if (dropdown) {
+        dropdown.remove();
     }
+}
+
+// 드롭다운에서 답변 저장
+function saveAnswerFromDropdown(memberId, answer) {
+    userAnswers[memberId] = answer;
+    
+    // 목록의 선택 박스도 업데이트
+    const listSelect = document.getElementById(`answer-${memberId}`);
+    if (listSelect) {
+        listSelect.value = answer;
+    }
+    
+    // 선택된 답변을 가계도에 표시
+    drawPedigree();
+    
+    // 드롭다운 숨기기
+    setTimeout(() => hideDropdown(), 300);
 }
 
 // 구성원 목록 업데이트
