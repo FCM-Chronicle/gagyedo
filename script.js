@@ -691,44 +691,48 @@ function saveAnswer(memberId, answer) {
 function checkAnswers() {
     if (!currentProblem) return;
 
+    // 모든 개체가 입력되었는지 확인
+    const unanswered = [];
+    currentProblem.members.forEach(member => {
+        const userAnswer = userAnswers[member.id];
+        if (!userAnswer || userAnswer === '') {
+            unanswered.push(member.id);
+        }
+    });
+
+    if (unanswered.length > 0) {
+        alert(`모든 개체의 유전자형을 입력해주세요!\n입력하지 않은 개체: ${unanswered.join(', ')}\n\n모르는 경우 "모름"을 선택하세요.`);
+        return;
+    }
+
     let correct = 0;
-    let total = 0;
+    let total = currentProblem.members.length;
     const details = [];
 
     currentProblem.members.forEach(member => {
         const userAnswer = userAnswers[member.id];
         
-        // 답변을 입력한 경우만 채점 (빈 값은 제외)
-        if (userAnswer && userAnswer !== '') {
-            total++;
+        // "모름"을 선택한 경우 특별 처리
+        if (userAnswer === 'unknown') {
+            // 실제로 확정할 수 없는 경우인지 체크
+            const canBeDetermined = canDetermineGenotype(member);
             
-            // "모름"을 선택한 경우 특별 처리
-            if (userAnswer === 'unknown') {
-                // 실제로 확정할 수 없는 경우인지 체크
-                const canBeDetermined = canDetermineGenotype(member);
-                
-                if (!canBeDetermined) {
-                    correct++;
-                    details.push(`<div class="result-item">개체 ${member.id}: ✅ 정답 - 확정할 수 없음 (실제: ${member.genotype} 또는 다른 가능성)</div>`);
-                } else {
-                    details.push(`<div class="result-item">개체 ${member.id}: ❌ 오답 - 확정 가능함, 정답: ${member.genotype}</div>`);
-                }
+            if (!canBeDetermined) {
+                correct++;
+                details.push(`<div class="result-item">개체 ${member.id}: ✅ 정답 - 확정할 수 없음 (가능성: AA 또는 Aa)</div>`);
             } else {
-                // 일반 답변 채점
-                if (userAnswer === member.genotype) {
-                    correct++;
-                    details.push(`<div class="result-item">개체 ${member.id}: ✅ 정답 (${member.genotype})</div>`);
-                } else {
-                    details.push(`<div class="result-item">개체 ${member.id}: ❌ 오답 - 입력: ${userAnswer}, 정답: ${member.genotype}</div>`);
-                }
+                details.push(`<div class="result-item">개체 ${member.id}: ❌ 오답 - 확정 가능함, 정답: ${member.genotype}</div>`);
+            }
+        } else {
+            // 일반 답변 채점
+            if (userAnswer === member.genotype) {
+                correct++;
+                details.push(`<div class="result-item">개체 ${member.id}: ✅ 정답 (${member.genotype})</div>`);
+            } else {
+                details.push(`<div class="result-item">개체 ${member.id}: ❌ 오답 - 입력: ${userAnswer}, 정답: ${member.genotype}</div>`);
             }
         }
     });
-
-    if (total === 0) {
-        alert('유전자형을 선택해주세요!');
-        return;
-    }
 
     const resultsDiv = document.getElementById('results');
     const percentage = Math.round((correct / total) * 100);
