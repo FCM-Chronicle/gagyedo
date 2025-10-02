@@ -1,10 +1,9 @@
-// 가계도 문제 데이터
 const problems = [
     {
         id: 1,
-        title: "문제 1: 기본 3세대 (양쪽 조부모)",
+        title: "문제 1: 기본 3세대",
         difficulty: "easy",
-        description: "양쪽 조부모가 모두 있는 3세대 가계도입니다. 열성 형질의 유전 양상을 분석하세요.",
+        description: "양쪽 조부모가 모두 있는 3세대 가계도입니다.",
         members: [
             { id: 1, x: 200, y: 80, gender: 'male', affected: false, genotype: 'Aa' },
             { id: 2, x: 300, y: 80, gender: 'female', affected: false, genotype: 'Aa' },
@@ -20,15 +19,30 @@ const problems = [
             { from: 1, to: 2, type: 'marriage' },
             { from: 3, to: 4, type: 'marriage' },
             { from: 5, to: 6, type: 'marriage' },
-            { from: 7, to: 8, type: 'marriage' },
-            { from: 9, to: 10, type: 'marriage' },
-            { from: 11, to: 12, type: 'marriage' },
-            { parent1: 1, parent2: 2, children: [7, 8] },
-            { parent1: 3, parent2: 4, children: [9, 10] },
-            { parent1: 5, parent2: 6, children: [11, 12] },
-            { parent1: 7, parent2: 8, children: [13, 14] },
-            { parent1: 9, parent2: 10, children: [15, 16] },
-            { parent1: 11, parent2: 12, children: [17, 18] }
+            { parent1: 1, parent2: 2, children: [5] },
+            { parent1: 3, parent2: 4, children: [6] },
+            { parent1: 5, parent2: 6, children: [7, 8, 9] }
+        ]
+    },
+    {
+        id: 2,
+        title: "문제 2: 한쪽 조부모",
+        difficulty: "easy",
+        description: "아버지 쪽 조부모만 있는 가계도입니다.",
+        members: [
+            { id: 1, x: 250, y: 80, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 2, x: 350, y: 80, gender: 'female', affected: false, genotype: 'Aa' },
+            { id: 3, x: 300, y: 220, gender: 'male', affected: false, genotype: 'Aa' },
+            { id: 4, x: 500, y: 220, gender: 'female', affected: true, genotype: 'aa' },
+            { id: 5, x: 300, y: 360, gender: 'female', affected: false, genotype: 'Aa' },
+            { id: 6, x: 400, y: 360, gender: 'male', affected: true, genotype: 'aa' },
+            { id: 7, x: 500, y: 360, gender: 'female', affected: true, genotype: 'aa' }
+        ],
+        connections: [
+            { from: 1, to: 2, type: 'marriage' },
+            { from: 3, to: 4, type: 'marriage' },
+            { parent1: 1, parent2: 2, children: [3] },
+            { parent1: 3, parent2: 4, children: [5, 6, 7] }
         ]
     }
 ];
@@ -37,7 +51,7 @@ let currentProblem = null;
 let userAnswers = {};
 let selectedMember = null;
 
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', function() {
     displayProblemList();
 });
 
@@ -45,28 +59,29 @@ function displayProblemList() {
     const grid = document.getElementById('problemGrid');
     grid.innerHTML = '';
 
-    problems.forEach(problem => {
+    problems.forEach(function(problem) {
         const card = document.createElement('div');
         card.className = 'problem-card';
-        card.onclick = () => loadProblem(problem.id);
+        card.onclick = function() { loadProblem(problem.id); };
 
-        const difficultyClass = problem.difficulty === 'easy' ? 'easy' : 
-                               problem.difficulty === 'medium' ? 'medium' : 'hard';
-        const difficultyText = problem.difficulty === 'easy' ? '쉬움' : 
-                              problem.difficulty === 'medium' ? '보통' : '어려움';
+        let difficultyClass = 'easy';
+        let difficultyText = '쉬움';
+        if (problem.difficulty === 'medium') {
+            difficultyClass = 'medium';
+            difficultyText = '보통';
+        } else if (problem.difficulty === 'hard') {
+            difficultyClass = 'hard';
+            difficultyText = '어려움';
+        }
 
-        card.innerHTML = `
-            <span class="difficulty ${difficultyClass}">${difficultyText}</span>
-            <h4>${problem.title}</h4>
-            <p>${problem.description}</p>
-        `;
+        card.innerHTML = '<span class="difficulty ' + difficultyClass + '">' + difficultyText + '</span><h4>' + problem.title + '</h4><p>' + problem.description + '</p>';
 
         grid.appendChild(card);
     });
 }
 
 function loadProblem(problemId) {
-    currentProblem = problems.find(p => p.id === problemId);
+    currentProblem = problems.find(function(p) { return p.id === problemId; });
     if (!currentProblem) return;
 
     userAnswers = {};
@@ -91,10 +106,10 @@ function drawPedigree() {
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    currentProblem.connections.forEach(conn => {
+    currentProblem.connections.forEach(function(conn) {
         if (conn.type === 'marriage') {
-            const member1 = currentProblem.members.find(m => m.id === conn.from);
-            const member2 = currentProblem.members.find(m => m.id === conn.to);
+            const member1 = currentProblem.members.find(function(m) { return m.id === conn.from; });
+            const member2 = currentProblem.members.find(function(m) { return m.id === conn.to; });
             
             ctx.strokeStyle = '#4a5568';
             ctx.lineWidth = 2;
@@ -103,13 +118,13 @@ function drawPedigree() {
             ctx.lineTo(member2.x, member2.y);
             ctx.stroke();
         } else if (conn.children) {
-            const parent1 = currentProblem.members.find(m => m.id === conn.parent1);
-            const parent2 = currentProblem.members.find(m => m.id === conn.parent2);
+            const parent1 = currentProblem.members.find(function(m) { return m.id === conn.parent1; });
+            const parent2 = currentProblem.members.find(function(m) { return m.id === conn.parent2; });
             const midX = (parent1.x + parent2.x) / 2;
             const midY = (parent1.y + parent2.y) / 2;
 
-            conn.children.forEach(childId => {
-                const child = currentProblem.members.find(m => m.id === childId);
+            conn.children.forEach(function(childId) {
+                const child = currentProblem.members.find(function(m) { return m.id === childId; });
                 
                 ctx.strokeStyle = '#4a5568';
                 ctx.lineWidth = 2;
@@ -123,7 +138,7 @@ function drawPedigree() {
         }
     });
 
-    currentProblem.members.forEach(member => {
+    currentProblem.members.forEach(function(member) {
         ctx.lineWidth = 3;
         
         if (selectedMember === member.id) {
@@ -190,17 +205,17 @@ function createHatchPattern() {
     return patternCanvas;
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', function() {
     const canvas = document.getElementById('pedigreeCanvas');
     
-    canvas.addEventListener('click', (e) => {
+    canvas.addEventListener('click', function(e) {
         if (!currentProblem) return;
         
         const rect = canvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
         
-        const clickedMember = currentProblem.members.find(member => {
+        const clickedMember = currentProblem.members.find(function(member) {
             const dx = x - member.x;
             const dy = y - member.y;
             return Math.sqrt(dx * dx + dy * dy) < 25;
@@ -226,24 +241,24 @@ function showDropdownAtMember(member, clientX, clientY) {
     
     const currentAnswer = userAnswers[member.id] || '';
     
-    dropdown.innerHTML = `
-        <div class="dropdown-header">개체 ${member.id}</div>
-        <select id="floating-select" onchange="saveAnswerFromDropdown(${member.id}, this.value)">
-            <option value="" ${currentAnswer === '' ? 'selected' : ''}>선택하세요</option>
-            <option value="AA" ${currentAnswer === 'AA' ? 'selected' : ''}>AA</option>
-            <option value="Aa" ${currentAnswer === 'Aa' ? 'selected' : ''}>Aa</option>
-            <option value="aa" ${currentAnswer === 'aa' ? 'selected' : ''}>aa</option>
-            <option value="unknown" ${currentAnswer === 'unknown' ? 'selected' : ''}>모름</option>
-        </select>
-    `;
+    let html = '<div class="dropdown-header">개체 ' + member.id + '</div>';
+    html += '<select id="floating-select" onchange="saveAnswerFromDropdown(' + member.id + ', this.value)">';
+    html += '<option value=""' + (currentAnswer === '' ? ' selected' : '') + '>선택하세요</option>';
+    html += '<option value="AA"' + (currentAnswer === 'AA' ? ' selected' : '') + '>AA</option>';
+    html += '<option value="Aa"' + (currentAnswer === 'Aa' ? ' selected' : '') + '>Aa</option>';
+    html += '<option value="aa"' + (currentAnswer === 'aa' ? ' selected' : '') + '>aa</option>';
+    html += '<option value="unknown"' + (currentAnswer === 'unknown' ? ' selected' : '') + '>모름</option>';
+    html += '</select>';
+    
+    dropdown.innerHTML = html;
     
     document.body.appendChild(dropdown);
     
-    dropdown.style.left = `${clientX - 75}px`;
-    dropdown.style.top = `${clientY - 100}px`;
+    dropdown.style.left = (clientX - 75) + 'px';
+    dropdown.style.top = (clientY - 100) + 'px';
     
     const select = dropdown.querySelector('select');
-    setTimeout(() => select.focus(), 100);
+    setTimeout(function() { select.focus(); }, 100);
 }
 
 function hideDropdown() {
@@ -256,14 +271,14 @@ function hideDropdown() {
 function saveAnswerFromDropdown(memberId, answer) {
     userAnswers[memberId] = answer;
     
-    const listSelect = document.getElementById(`answer-${memberId}`);
+    const listSelect = document.getElementById('answer-' + memberId);
     if (listSelect) {
         listSelect.value = answer;
     }
     
     drawPedigree();
     
-    setTimeout(() => hideDropdown(), 300);
+    setTimeout(function() { hideDropdown(); }, 300);
 }
 
 function updateMemberList() {
@@ -272,30 +287,30 @@ function updateMemberList() {
     const list = document.getElementById('memberList');
     list.innerHTML = '';
 
-    currentProblem.members.forEach(member => {
+    currentProblem.members.forEach(function(member) {
         const card = document.createElement('div');
-        card.className = `member-card ${member.affected ? 'affected' : ''}`;
-        card.id = `card-${member.id}`;
+        card.className = 'member-card' + (member.affected ? ' affected' : '');
+        card.id = 'card-' + member.id;
         
         const genderIcon = member.gender === 'male' ? '♂️' : '♀️';
         const genderClass = member.gender === 'male' ? 'male' : 'female';
         const phenotype = member.affected ? '열성 형질' : '우성 형질';
         
-        card.innerHTML = `
-            <div class="member-info">
-                <div class="gender-icon ${genderClass}">${genderIcon}</div>
-                <span>개체 ${member.id} (${phenotype})</span>
-            </div>
-            <select id="answer-${member.id}" onchange="saveAnswer(${member.id}, this.value)">
-                <option value="">선택하세요</option>
-                <option value="AA">AA (우성 동형접합)</option>
-                <option value="Aa">Aa (이형접합)</option>
-                <option value="aa">aa (열성 동형접합)</option>
-                <option value="unknown">모름</option>
-            </select>
-        `;
+        let html = '<div class="member-info">';
+        html += '<div class="gender-icon ' + genderClass + '">' + genderIcon + '</div>';
+        html += '<span>개체 ' + member.id + ' (' + phenotype + ')</span>';
+        html += '</div>';
+        html += '<select id="answer-' + member.id + '" onchange="saveAnswer(' + member.id + ', this.value)">';
+        html += '<option value="">선택하세요</option>';
+        html += '<option value="AA">AA (우성 동형접합)</option>';
+        html += '<option value="Aa">Aa (이형접합)</option>';
+        html += '<option value="aa">aa (열성 동형접합)</option>';
+        html += '<option value="unknown">모름</option>';
+        html += '</select>';
         
-        card.addEventListener('click', (e) => {
+        card.innerHTML = html;
+        
+        card.addEventListener('click', function(e) {
             if (e.target.tagName !== 'SELECT') {
                 const rect = document.getElementById('pedigreeCanvas').getBoundingClientRect();
                 showDropdownAtMember(member, rect.left + member.x, rect.top + member.y);
@@ -315,7 +330,7 @@ function checkAnswers() {
     if (!currentProblem) return;
 
     const unanswered = [];
-    currentProblem.members.forEach(member => {
+    currentProblem.members.forEach(function(member) {
         const userAnswer = userAnswers[member.id];
         if (!userAnswer || userAnswer === '') {
             unanswered.push(member.id);
@@ -323,15 +338,15 @@ function checkAnswers() {
     });
 
     if (unanswered.length > 0) {
-        alert(`모든 개체의 유전자형을 입력해주세요!\n입력하지 않은 개체: ${unanswered.join(', ')}\n\n모르는 경우 "모름"을 선택하세요.`);
+        alert('모든 개체의 유전자형을 입력해주세요!\n입력하지 않은 개체: ' + unanswered.join(', ') + '\n\n모르는 경우 "모름"을 선택하세요.');
         return;
     }
 
     let correct = 0;
-    let total = currentProblem.members.length;
+    const total = currentProblem.members.length;
     const details = [];
 
-    currentProblem.members.forEach(member => {
+    currentProblem.members.forEach(function(member) {
         const userAnswer = userAnswers[member.id];
         
         if (userAnswer === 'unknown') {
@@ -339,16 +354,16 @@ function checkAnswers() {
             
             if (!canBeDetermined) {
                 correct++;
-                details.push(`<div class="result-item">개체 ${member.id}: ✅ 정답 - 확정할 수 없음 (가능성: AA 또는 Aa)</div>`);
+                details.push('<div class="result-item">개체 ' + member.id + ': ✅ 정답 - 확정할 수 없음</div>');
             } else {
-                details.push(`<div class="result-item">개체 ${member.id}: ❌ 오답 - 확정 가능함, 정답: ${member.genotype}</div>`);
+                details.push('<div class="result-item">개체 ' + member.id + ': ❌ 오답 - 확정 가능함, 정답: ' + member.genotype + '</div>');
             }
         } else {
             if (userAnswer === member.genotype) {
                 correct++;
-                details.push(`<div class="result-item">개체 ${member.id}: ✅ 정답 (${member.genotype})</div>`);
+                details.push('<div class="result-item">개체 ' + member.id + ': ✅ 정답 (' + member.genotype + ')</div>');
             } else {
-                details.push(`<div class="result-item">개체 ${member.id}: ❌ 오답 - 입력: ${userAnswer}, 정답: ${member.genotype}</div>`);
+                details.push('<div class="result-item">개체 ' + member.id + ': ❌ 오답 - 입력: ' + userAnswer + ', 정답: ' + member.genotype + '</div>');
             }
         }
     });
@@ -369,14 +384,7 @@ function checkAnswers() {
         message = '거의 다 맞혔어요!';
     }
 
-    resultsDiv.innerHTML = `
-        <h2>${emoji} 채점 결과</h2>
-        <p>${message}</p>
-        <p style="font-size: 2em; font-weight: bold; margin: 20px 0;">정답률: ${percentage}% (${correct}/${total})</p>
-        <div class="result-details">
-            ${details.join('')}
-        </div>
-    `;
+    resultsDiv.innerHTML = '<h2>' + emoji + ' 채점 결과</h2><p>' + message + '</p><p style="font-size: 2em; font-weight: bold; margin: 20px 0;">정답률: ' + percentage + '% (' + correct + '/' + total + ')</p><div class="result-details">' + details.join('') + '</div>';
     resultsDiv.style.display = 'block';
     
     resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -397,24 +405,20 @@ function canDetermineGenotype(member) {
         return true;
     }
     
-    const spouseIsAffected = isSpouseAffected(member);
-    const allChildrenUnaffected = areAllChildrenUnaffected(member);
-    if (spouseIsAffected && allChildrenUnaffected && hasChildren(member)) {
-        return true;
-    }
-    
     return false;
 }
 
 function hasChildWithGenotype(member, genotype) {
-    const childConnections = currentProblem.connections.filter(conn => 
-        conn.parent1 === member.id || conn.parent2 === member.id
-    );
+    const childConnections = currentProblem.connections.filter(function(conn) {
+        return conn.parent1 === member.id || conn.parent2 === member.id;
+    });
     
-    for (const conn of childConnections) {
+    for (let i = 0; i < childConnections.length; i++) {
+        const conn = childConnections[i];
         if (conn.children) {
-            for (const childId of conn.children) {
-                const child = currentProblem.members.find(m => m.id === childId);
+            for (let j = 0; j < conn.children.length; j++) {
+                const childId = conn.children[j];
+                const child = currentProblem.members.find(function(m) { return m.id === childId; });
                 if (child && child.genotype === genotype) {
                     return true;
                 }
@@ -425,57 +429,19 @@ function hasChildWithGenotype(member, genotype) {
 }
 
 function hasParentWithGenotype(member, genotype) {
-    const parentConnection = currentProblem.connections.find(conn => 
-        conn.children && conn.children.includes(member.id)
-    );
+    const parentConnection = currentProblem.connections.find(function(conn) {
+        return conn.children && conn.children.includes(member.id);
+    });
     
     if (parentConnection) {
-        const parent1 = currentProblem.members.find(m => m.id === parentConnection.parent1);
-        const parent2 = currentProblem.members.find(m => m.id === parentConnection.parent2);
+        const parent1 = currentProblem.members.find(function(m) { return m.id === parentConnection.parent1; });
+        const parent2 = currentProblem.members.find(function(m) { return m.id === parentConnection.parent2; });
         
         if ((parent1 && parent1.genotype === genotype) || (parent2 && parent2.genotype === genotype)) {
             return true;
         }
     }
     return false;
-}
-
-function isSpouseAffected(member) {
-    const marriageConn = currentProblem.connections.find(conn => 
-        conn.type === 'marriage' && (conn.from === member.id || conn.to === member.id)
-    );
-    
-    if (marriageConn) {
-        const spouseId = marriageConn.from === member.id ? marriageConn.to : marriageConn.from;
-        const spouse = currentProblem.members.find(m => m.id === spouseId);
-        return spouse && spouse.affected;
-    }
-    return false;
-}
-
-function areAllChildrenUnaffected(member) {
-    const childConnections = currentProblem.connections.filter(conn => 
-        (conn.parent1 === member.id || conn.parent2 === member.id) && conn.children
-    );
-    
-    if (childConnections.length === 0) return false;
-    
-    for (const conn of childConnections) {
-        for (const childId of conn.children) {
-            const child = currentProblem.members.find(m => m.id === childId);
-            if (child && child.affected) {
-                return false;
-            }
-        }
-    }
-    return true;
-}
-
-function hasChildren(member) {
-    const childConnections = currentProblem.connections.filter(conn => 
-        (conn.parent1 === member.id || conn.parent2 === member.id) && conn.children
-    );
-    return childConnections.length > 0 && childConnections.some(conn => conn.children.length > 0);
 }
 
 function showHintBox() {
@@ -494,8 +460,8 @@ function resetProblem() {
         userAnswers = {};
         selectedMember = null;
         
-        currentProblem.members.forEach(member => {
-            const select = document.getElementById(`answer-${member.id}`);
+        currentProblem.members.forEach(function(member) {
+            const select = document.getElementById('answer-' + member.id);
             if (select) {
                 select.value = '';
             }
@@ -506,318 +472,3 @@ function resetProblem() {
         drawPedigree();
     }
 }
-            { from: 5, to: 6, type: 'marriage' },
-            { parent1: 1, parent2: 2, children: [5] },
-            { parent1: 3, parent2: 4, children: [6] },
-            { parent1: 5, parent2: 6, children: [7, 8, 9] }
-        ]
-    },
-    {
-        id: 2,
-        title: "문제 2: 한쪽 조부모만 있는 가계도",
-        difficulty: "easy",
-        description: "아버지 쪽 조부모만 있는 3세대 가계도입니다. 모든 유전자형을 확정할 수 있습니다.",
-        members: [
-            { id: 1, x: 250, y: 80, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 2, x: 350, y: 80, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 3, x: 300, y: 220, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 4, x: 500, y: 220, gender: 'female', affected: true, genotype: 'aa' },
-            { id: 5, x: 300, y: 360, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 6, x: 400, y: 360, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 7, x: 500, y: 360, gender: 'female', affected: true, genotype: 'aa' }
-        ],
-        connections: [
-            { from: 1, to: 2, type: 'marriage' },
-            { from: 3, to: 4, type: 'marriage' },
-            { parent1: 1, parent2: 2, children: [3] },
-            { parent1: 3, parent2: 4, children: [5, 6, 7] }
-        ]
-    },
-    {
-        id: 3,
-        title: "문제 3: 두 가족의 3세대",
-        difficulty: "medium",
-        description: "2세대에 형제가 각각 결혼하여 자녀를 둔 복잡한 가계도입니다.",
-        members: [
-            { id: 1, x: 250, y: 60, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 2, x: 350, y: 60, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 3, x: 550, y: 60, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 4, x: 650, y: 60, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 5, x: 200, y: 200, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 6, x: 300, y: 200, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 7, x: 400, y: 200, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 8, x: 500, y: 200, gender: 'female', affected: true, genotype: 'aa' },
-            { id: 9, x: 150, y: 340, gender: 'female', affected: true, genotype: 'aa' },
-            { id: 10, x: 250, y: 340, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 11, x: 400, y: 340, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 12, x: 500, y: 340, gender: 'female', affected: true, genotype: 'aa' }
-        ],
-        connections: [
-            { from: 1, to: 2, type: 'marriage' },
-            { from: 3, to: 4, type: 'marriage' },
-            { from: 5, to: 6, type: 'marriage' },
-            { from: 7, to: 8, type: 'marriage' },
-            { parent1: 1, parent2: 2, children: [5, 7] },
-            { parent1: 3, parent2: 4, children: [8] },
-            { parent1: 5, parent2: 6, children: [9, 10] },
-            { parent1: 7, parent2: 8, children: [11, 12] }
-        ]
-    },
-    {
-        id: 4,
-        title: "문제 4: 대가족 3세대",
-        difficulty: "medium",
-        description: "3세대에 많은 자녀가 있는 대가족 가계도입니다. 모든 유전자형을 확정할 수 있습니다.",
-        members: [
-            { id: 1, x: 200, y: 70, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 2, x: 300, y: 70, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 3, x: 600, y: 70, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 4, x: 700, y: 70, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 5, x: 250, y: 210, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 6, x: 650, y: 210, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 7, x: 250, y: 350, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 8, x: 350, y: 350, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 9, x: 450, y: 350, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 10, x: 550, y: 350, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 11, x: 650, y: 350, gender: 'male', affected: false, genotype: 'Aa' }
-        ],
-        connections: [
-            { from: 1, to: 2, type: 'marriage' },
-            { from: 3, to: 4, type: 'marriage' },
-            { from: 5, to: 6, type: 'marriage' },
-            { parent1: 1, parent2: 2, children: [5] },
-            { parent1: 3, parent2: 4, children: [6] },
-            { parent1: 5, parent2: 6, children: [7, 8, 9, 10, 11] }
-        ]
-    },
-    {
-        id: 5,
-        title: "문제 5: 열성 형질이 많은 가계도",
-        difficulty: "medium",
-        description: "여러 세대에 걸쳐 열성 형질 보유자가 나타나는 가계도입니다.",
-        members: [
-            { id: 1, x: 200, y: 70, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 2, x: 300, y: 70, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 3, x: 600, y: 70, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 4, x: 700, y: 70, gender: 'female', affected: true, genotype: 'aa' },
-            { id: 5, x: 250, y: 210, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 6, x: 650, y: 210, gender: 'female', affected: true, genotype: 'aa' },
-            { id: 7, x: 350, y: 350, gender: 'female', affected: true, genotype: 'aa' },
-            { id: 8, x: 450, y: 350, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 9, x: 550, y: 350, gender: 'female', affected: true, genotype: 'aa' }
-        ],
-        connections: [
-            { from: 1, to: 2, type: 'marriage' },
-            { from: 3, to: 4, type: 'marriage' },
-            { from: 5, to: 6, type: 'marriage' },
-            { parent1: 1, parent2: 2, children: [5] },
-            { parent1: 3, parent2: 4, children: [6] },
-            { parent1: 5, parent2: 6, children: [7, 8, 9] }
-        ]
-    },
-    {
-        id: 6,
-        title: "문제 6: 복잡한 양쪽 조부모",
-        difficulty: "hard",
-        description: "양쪽 조부모가 모두 있고 2세대에 형제자매가 있는 복잡한 가계도입니다.",
-        members: [
-            { id: 1, x: 150, y: 60, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 2, x: 250, y: 60, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 3, x: 650, y: 60, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 4, x: 750, y: 60, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 5, x: 150, y: 200, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 6, x: 250, y: 200, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 7, x: 350, y: 200, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 8, x: 650, y: 200, gender: 'female', affected: true, genotype: 'aa' },
-            { id: 9, x: 200, y: 340, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 10, x: 300, y: 340, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 11, x: 450, y: 340, gender: 'female', affected: true, genotype: 'aa' },
-            { id: 12, x: 550, y: 340, gender: 'male', affected: true, genotype: 'aa' }
-        ],
-        connections: [
-            { from: 1, to: 2, type: 'marriage' },
-            { from: 3, to: 4, type: 'marriage' },
-            { from: 5, to: 6, type: 'marriage' },
-            { from: 7, to: 8, type: 'marriage' },
-            { parent1: 1, parent2: 2, children: [5, 6] },
-            { parent1: 3, parent2: 4, children: [8] },
-            { parent1: 5, parent2: 6, children: [9, 10] },
-            { parent1: 7, parent2: 8, children: [11, 12] }
-        ]
-    },
-    {
-        id: 7,
-        title: "문제 7: 격세유전 패턴 (모름 가능)",
-        difficulty: "medium",
-        description: "일부 개체는 유전자형을 확정할 수 없습니다. 신중하게 판단하세요!",
-        members: [
-            { id: 1, x: 200, y: 70, gender: 'male', affected: false, genotype: 'AA' },
-            { id: 2, x: 300, y: 70, gender: 'female', affected: false, genotype: 'AA' },
-            { id: 3, x: 600, y: 70, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 4, x: 700, y: 70, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 5, x: 250, y: 210, gender: 'male', affected: false, genotype: 'AA' },
-            { id: 6, x: 650, y: 210, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 7, x: 300, y: 350, gender: 'female', affected: false, genotype: 'AA' },
-            { id: 8, x: 400, y: 350, gender: 'male', affected: false, genotype: 'AA' },
-            { id: 9, x: 500, y: 350, gender: 'female', affected: true, genotype: 'aa' },
-            { id: 10, x: 600, y: 350, gender: 'male', affected: false, genotype: 'Aa' }
-        ],
-        connections: [
-            { from: 1, to: 2, type: 'marriage' },
-            { from: 3, to: 4, type: 'marriage' },
-            { from: 5, to: 6, type: 'marriage' },
-            { parent1: 1, parent2: 2, children: [5] },
-            { parent1: 3, parent2: 4, children: [6] },
-            { parent1: 5, parent2: 6, children: [7, 8, 9, 10] }
-        ]
-    },
-    {
-        id: 8,
-        title: "문제 8: 어머니 쪽 조부모만",
-        difficulty: "easy",
-        description: "어머니 쪽 조부모만 있는 3세대 가계도입니다. 모든 유전자형을 확정할 수 있습니다.",
-        members: [
-            { id: 1, x: 550, y: 80, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 2, x: 650, y: 80, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 3, x: 300, y: 220, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 4, x: 600, y: 220, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 5, x: 350, y: 360, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 6, x: 450, y: 360, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 7, x: 550, y: 360, gender: 'male', affected: true, genotype: 'aa' }
-        ],
-        connections: [
-            { from: 1, to: 2, type: 'marriage' },
-            { from: 3, to: 4, type: 'marriage' },
-            { parent1: 1, parent2: 2, children: [4] },
-            { parent1: 3, parent2: 4, children: [5, 6, 7] }
-        ]
-    },
-    {
-        id: 9,
-        title: "문제 9: 3가족 확장형",
-        difficulty: "hard",
-        description: "2세대에 3명의 형제자매가 각각 가정을 꾸린 대가족입니다.",
-        members: [
-            { id: 1, x: 250, y: 50, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 2, x: 350, y: 50, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 3, x: 550, y: 50, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 4, x: 650, y: 50, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 5, x: 850, y: 50, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 6, x: 950, y: 50, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 7, x: 200, y: 190, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 8, x: 400, y: 190, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 9, x: 600, y: 190, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 10, x: 800, y: 190, gender: 'female', affected: true, genotype: 'aa' },
-            { id: 11, x: 150, y: 330, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 12, x: 250, y: 330, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 13, x: 500, y: 330, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 14, x: 600, y: 330, gender: 'female', affected: true, genotype: 'aa' },
-            { id: 15, x: 800, y: 330, gender: 'male', affected: true, genotype: 'aa' }
-        ],
-        connections: [
-            { from: 1, to: 2, type: 'marriage' },
-            { from: 3, to: 4, type: 'marriage' },
-            { from: 5, to: 6, type: 'marriage' },
-            { from: 7, to: 8, type: 'marriage' },
-            { from: 9, to: 10, type: 'marriage' },
-            { parent1: 1, parent2: 2, children: [7] },
-            { parent1: 3, parent2: 4, children: [8, 9] },
-            { parent1: 5, parent2: 6, children: [10] },
-            { parent1: 7, parent2: 8, children: [11, 12] },
-            { parent1: 9, parent2: 10, children: [13, 14, 15] }
-        ]
-    },
-    {
-        id: 10,
-        title: "문제 10: 양쪽 대가족",
-        difficulty: "hard",
-        description: "양쪽 조부모의 자녀가 많고 3세대도 많은 복잡한 대가족입니다.",
-        members: [
-            { id: 1, x: 150, y: 60, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 2, x: 250, y: 60, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 3, x: 650, y: 60, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 4, x: 750, y: 60, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 5, x: 100, y: 200, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 6, x: 200, y: 200, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 7, x: 300, y: 200, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 8, x: 550, y: 200, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 9, x: 650, y: 200, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 10, x: 750, y: 200, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 11, x: 200, y: 340, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 12, x: 300, y: 340, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 13, x: 500, y: 340, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 14, x: 600, y: 340, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 15, x: 700, y: 340, gender: 'male', affected: false, genotype: 'Aa' }
-        ],
-        connections: [
-            { from: 1, to: 2, type: 'marriage' },
-            { from: 3, to: 4, type: 'marriage' },
-            { from: 5, to: 6, type: 'marriage' },
-            { from: 7, to: 8, type: 'marriage' },
-            { from: 9, to: 10, type: 'marriage' },
-            { parent1: 1, parent2: 2, children: [5, 6, 7] },
-            { parent1: 3, parent2: 4, children: [8, 9, 10] },
-            { parent1: 5, parent2: 6, children: [11, 12] },
-            { parent1: 7, parent2: 8, children: [13, 14] },
-            { parent1: 9, parent2: 10, children: [15] }
-        ]
-    },
-    {
-        id: 11,
-        title: "문제 11: 균형잡힌 3세대 (모름 가능)",
-        difficulty: "medium",
-        description: "일부 개체는 확정할 수 없습니다. AA인지 Aa인지 신중하게 판단하세요!",
-        members: [
-            { id: 1, x: 200, y: 70, gender: 'male', affected: false, genotype: 'AA' },
-            { id: 2, x: 300, y: 70, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 3, x: 600, y: 70, gender: 'male', affected: false, genotype: 'AA' },
-            { id: 4, x: 700, y: 70, gender: 'female', affected: false, genotype: 'AA' },
-            { id: 5, x: 250, y: 210, gender: 'male', affected: false, genotype: 'AA' },
-            { id: 6, x: 350, y: 210, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 7, x: 550, y: 210, gender: 'male', affected: false, genotype: 'AA' },
-            { id: 8, x: 650, y: 210, gender: 'female', affected: false, genotype: 'AA' },
-            { id: 9, x: 200, y: 350, gender: 'male', affected: false, genotype: 'AA' },
-            { id: 10, x: 300, y: 350, gender: 'female', affected: false, genotype: 'AA' },
-            { id: 11, x: 400, y: 350, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 12, x: 600, y: 350, gender: 'female', affected: false, genotype: 'AA' },
-            { id: 13, x: 700, y: 350, gender: 'male', affected: false, genotype: 'AA' }
-        ],
-        connections: [
-            { from: 1, to: 2, type: 'marriage' },
-            { from: 3, to: 4, type: 'marriage' },
-            { from: 5, to: 6, type: 'marriage' },
-            { from: 7, to: 8, type: 'marriage' },
-            { parent1: 1, parent2: 2, children: [5, 6] },
-            { parent1: 3, parent2: 4, children: [7, 8] },
-            { parent1: 5, parent2: 6, children: [9, 10, 11] },
-            { parent1: 7, parent2: 8, children: [12, 13] }
-        ]
-    },
-    {
-        id: 12,
-        title: "문제 12: 최종 도전",
-        difficulty: "hard",
-        description: "4가족이 연결된 매우 복잡한 3세대 가계도입니다. 모든 분석 기술을 동원하세요!",
-        members: [
-            { id: 1, x: 150, y: 50, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 2, x: 250, y: 50, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 3, x: 450, y: 50, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 4, x: 550, y: 50, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 5, x: 750, y: 50, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 6, x: 850, y: 50, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 7, x: 100, y: 190, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 8, x: 200, y: 190, gender: 'female', affected: true, genotype: 'aa' },
-            { id: 9, x: 300, y: 190, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 10, x: 450, y: 190, gender: 'female', affected: true, genotype: 'aa' },
-            { id: 11, x: 600, y: 190, gender: 'male', affected: false, genotype: 'Aa' },
-            { id: 12, x: 750, y: 190, gender: 'female', affected: true, genotype: 'aa' },
-            { id: 13, x: 50, y: 330, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 14, x: 150, y: 330, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 15, x: 300, y: 330, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 16, x: 450, y: 330, gender: 'male', affected: true, genotype: 'aa' },
-            { id: 17, x: 600, y: 330, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 18, x: 700, y: 330, gender: 'male', affected: true, genotype: 'aa' }
-        ],
-        connections: [
-            { from: 1, to: 2, type: 'marriage' },
-            { from: 3, to: 4, type: 'marriage' },
