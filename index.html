@@ -12,33 +12,34 @@
             <h1>🧬 유전 가계도 분석 연습</h1>
             <p class="subtitle">가계도를 보고 각 개체의 유전자형을 분석해보세요!</p>
         </header>
-
         <div class="main-content">
             <div class="instructions">
                 <h3>📝 사용 방법</h3>
                 <ol>
-                    <li><strong>문제 선택</strong>: 아래에서 원하는 가계도 문제를 선택하세요</li>
+                    <li><strong>문제 선택</strong>: "랜덤 문제 풀기" 버튼을 누르거나 아래에서 원하는 문제를 선택하세요</li>
                     <li><strong>가계도 분석</strong>: 가계도를 보고 유전 방식을 파악하세요 (우성/열성, 상염색체)</li>
                     <li><strong>유전자형 입력</strong>: 각 개체의 유전자형을 AA, Aa, aa 또는 "모름"으로 선택</li>
                     <li><strong>제출 및 채점</strong>: "채점하기" 버튼으로 정답 확인!</li>
                 </ol>
             </div>
-
             <div class="problem-selector">
                 <h3>📚 문제 선택</h3>
+                <div style="text-align: center; margin-bottom: 25px;">
+                    <button class="btn-primary" onclick="loadRandomProblem()" style="font-size: 1.3em; padding: 18px 50px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">
+                        🎲 랜덤 문제 풀기
+                    </button>
+                    <p style="margin-top: 10px; color: #718096; font-size: 0.95em;">총 30개의 다양한 문제 중 랜덤으로 선택됩니다</p>
+                </div>
                 <div class="problem-grid" id="problemGrid"></div>
             </div>
-
             <div id="currentProblem" style="display: none;">
                 <div class="problem-header">
                     <h2 id="problemTitle"></h2>
                     <p id="problemDescription"></p>
                 </div>
-
                 <div class="canvas-container">
                     <canvas id="pedigreeCanvas" width="900" height="600"></canvas>
                 </div>
-
                 <div class="legend">
                     <div class="legend-item">
                         <div class="symbol male-normal"></div>
@@ -57,8 +58,10 @@
                         <span>열성 형질 여성</span>
                     </div>
                 </div>
-
                 <div class="controls">
+                    <button class="btn-primary" onclick="loadRandomProblem()">
+                        🎲 다른 문제
+                    </button>
                     <button class="btn-warning" onclick="showHintBox()">
                         💡 힌트
                     </button>
@@ -69,12 +72,10 @@
                         🔄 다시 풀기
                     </button>
                 </div>
-
                 <div class="analysis-panel">
                     <h2 class="analysis-title">🔬 유전자형 분석</h2>
                     <div id="memberList" class="member-list"></div>
                 </div>
-
                 <div id="hintBox" class="hint-box" style="display: none;">
                     <h3>💡 분석 힌트</h3>
                     <ul>
@@ -86,12 +87,10 @@
                         <li>형질 보유자가 정상인과 결혼해서 자녀가 모두 정상이면 → 정상인은 AA입니다</li>
                     </ul>
                 </div>
-
                 <div id="results" style="display: none;"></div>
             </div>
         </div>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
