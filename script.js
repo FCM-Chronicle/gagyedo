@@ -361,7 +361,553 @@ const problems = [
             { id: 12, x: 750, y: 190, gender: 'female', affected: true, genotype: 'aa' },
             // 3세대
             { id: 13, x: 50, y: 330, gender: 'female', affected: false, genotype: 'Aa' },
-            { id: 14, x: 150, y: 330, gender: 'male', affected: true, genotype: // 가계도 문제 데이터 - 모두 3세대 가정형
+            { id: 14, x: 150, y: 330, gender: 'male', affected: true, genotype: 'aa' },
+            { id: 15, x: 300, y: 330, gender: 'female', affected: false, genotype: 'Aa' },
+            { id: 16, x: 450, y: 330, gender: 'male', affected: true, genotype: 'aa' },
+            { id: 17, x: 600, y: 330, gender: 'female', affected: false, genotype: 'Aa' },
+            { id: 18, x: 700, y: 330, gender: 'male', affected: true, genotype: 'aa' }
+        ],
+        connections: [
+            { from: 1, to: 2, type: 'marriage' },
+            { from: 3, to: 4, type: 'marriage' },
+            { from: 5, to: 6, type: 'marriage' },
+            { from: 7, to: 8, type: 'marriage' },
+            { from: 9, to: 10, type: 'marriage' },
+            { from: 11, to: 12, type: 'marriage' },
+            { parent1: 1, parent2: 2, children: [7, 8] },
+            { parent1: 3, parent2: 4, children: [9, 10] },
+            { parent1: 5, parent2: 6, children: [11, 12] },
+            { parent1: 7, parent2: 8, children: [13, 14] },
+            { parent1: 9, parent2: 10, children: [15, 16] },
+            { parent1: 11, parent2: 12, children: [17, 18] }
+        ]
+    }
+];
+
+// 현재 선택된 문제
+let currentProblem = null;
+let userAnswers = {};
+let selectedMember = null;
+
+// 페이지 로드 시 문제 목록 표시
+window.addEventListener('DOMContentLoaded', () => {
+    displayProblemList();
+});
+
+// 문제 목록 표시
+function displayProblemList() {
+    const grid = document.getElementById('problemGrid');
+    grid.innerHTML = '';
+
+    problems.forEach(problem => {
+        const card = document.createElement('div');
+        card.className = 'problem-card';
+        card.onclick = () => loadProblem(problem.id);
+
+        const difficultyClass = problem.difficulty === 'easy' ? 'easy' : 
+                               problem.difficulty === 'medium' ? 'medium' : 'hard';
+        const difficultyText = problem.difficulty === 'easy' ? '쉬움' : 
+                              problem.difficulty === 'medium' ? '보통' : '어려움';
+
+        card.innerHTML = `
+            <span class="difficulty ${difficultyClass}">${difficultyText}</span>
+            <h4>${problem.title}</h4>
+            <p>${problem.description}</p>
+        `;
+
+        grid.appendChild(card);
+    });
+}
+
+// 문제 로드
+function loadProblem(problemId) {
+    currentProblem = problems.find(p => p.id === problemId);
+    if (!currentProblem) return;
+
+    userAnswers = {};
+    selectedMember = null;
+    
+    document.getElementById('currentProblem').style.display = 'block';
+    document.getElementById('problemTitle').textContent = currentProblem.title;
+    document.getElementById('problemDescription').textContent = currentProblem.description;
+    document.getElementById('results').style.display = 'none';
+    document.getElementById('hintBox').style.display = 'none';
+
+    drawPedigree();
+    updateMemberList();
+
+    // 문제로 스크롤
+    document.getElementById('currentProblem').scrollIntoView({ behavior: 'smooth' });
+}
+
+// 가계도 그리기
+function drawPedigree() {
+    if (!currentProblem) return;
+
+    const canvas = document.getElementById('pedigreeCanvas');
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // 연결선 먼저 그리기
+    currentProblem.connections.forEach(conn => {
+        if (conn.type === 'marriage') {
+            const member1 = currentProblem.members.find(m => m.id === conn.from);
+            const member2 = currentProblem.members.find(m => m.id === conn.to);
+            
+            ctx.strokeStyle = '#4a5568';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(member1.x, member1.y);
+            ctx.lineTo(member2.x, member2.y);
+            ctx.stroke();
+        } else if (conn.children) {
+            const parent1 = currentProblem.members.find(m => m.id === conn.parent1);
+            const parent2 = currentProblem.members.find(m => m.id === conn.parent2);
+            const midX = (parent1.x + parent2.x) / 2;
+            const midY = (parent1.y + parent2.y) / 2;
+
+            conn.children.forEach(childId => {
+                const child = currentProblem.members.find(m => m.id === childId);
+                
+                ctx.strokeStyle = '#4a5568';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(midX, midY);
+                ctx.lineTo(midX, midY + 30);
+                ctx.lineTo(child.x, midY + 30);
+                ctx.lineTo(child.x, child.y - 30);
+                ctx.stroke();
+            });
+        }
+    });
+
+    // 개체 그리기
+    currentProblem.members.forEach(member => {
+        ctx.lineWidth = 3;
+        
+        // 선택된 개체는 강조 표시
+        if (selectedMember === member.id) {
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = 5;
+        } else {
+            ctx.strokeStyle = '#2d3748';
+            ctx.lineWidth = 3;
+        }
+
+        if (member.gender === 'male') {
+            // 사각형
+            ctx.strokeRect(member.x - 25, member.y - 25, 50, 50);
+            
+            if (member.affected) {
+                // 빗금 패턴
+                ctx.fillStyle = ctx.createPattern(createHatchPattern(), 'repeat');
+                ctx.fillRect(member.x - 25, member.y - 25, 50, 50);
+            }
+        } else {
+            // 원
+            ctx.beginPath();
+            ctx.arc(member.x, member.y, 25, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            if (member.affected) {
+                ctx.save();
+                ctx.clip();
+                ctx.fillStyle = ctx.createPattern(createHatchPattern(), 'repeat');
+                ctx.fillRect(member.x - 25, member.y - 25, 50, 50);
+                ctx.restore();
+            }
+        }
+
+        // ID 표시
+        ctx.fillStyle = '#2d3748';
+        ctx.font = 'bold 16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(member.id, member.x, member.y);
+        
+        // 사용자가 입력한 유전자형 표시
+        const userAnswer = userAnswers[member.id];
+        if (userAnswer && userAnswer !== 'unknown') {
+            ctx.fillStyle = '#667eea';
+            ctx.font = 'bold 14px sans-serif';
+            ctx.fillText(userAnswer, member.x, member.y + 40);
+        } else if (userAnswer === 'unknown') {
+            ctx.fillStyle = '#f59e0b';
+            ctx.font = 'bold 14px sans-serif';
+            ctx.fillText('?', member.x, member.y + 40);
+        }
+    });
+}
+
+// 빗금 패턴 생성
+function createHatchPattern() {
+    const patternCanvas = document.createElement('canvas');
+    patternCanvas.width = 10;
+    patternCanvas.height = 10;
+    const pctx = patternCanvas.getContext('2d');
+    
+    pctx.strokeStyle = '#2d3748';
+    pctx.lineWidth = 2;
+    pctx.beginPath();
+    pctx.moveTo(0, 10);
+    pctx.lineTo(10, 0);
+    pctx.stroke();
+    
+    return patternCanvas;
+}
+
+// 캔버스 클릭 이벤트
+document.addEventListener('DOMContentLoaded', () => {
+    const canvas = document.getElementById('pedigreeCanvas');
+    
+    canvas.addEventListener('click', (e) => {
+        if (!currentProblem) return;
+        
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        // 클릭한 위치에 있는 개체 찾기
+        const clickedMember = currentProblem.members.find(member => {
+            const dx = x - member.x;
+            const dy = y - member.y;
+            return Math.sqrt(dx * dx + dy * dy) < 25;
+        });
+        
+        if (clickedMember) {
+            showDropdownAtMember(clickedMember, e.clientX, e.clientY);
+        } else {
+            hideDropdown();
+        }
+    });
+});
+
+// 개체 위에 드롭다운 표시
+function showDropdownAtMember(member, clientX, clientY) {
+    selectedMember = member.id;
+    drawPedigree();
+    
+    // 기존 드롭다운 제거
+    hideDropdown();
+    
+    // 새 드롭다운 생성
+    const dropdown = document.createElement('div');
+    dropdown.id = 'floating-dropdown';
+    dropdown.className = 'floating-dropdown';
+    
+    const currentAnswer = userAnswers[member.id] || '';
+    
+    dropdown.innerHTML = `
+        <div class="dropdown-header">개체 ${member.id}</div>
+        <select id="floating-select" onchange="saveAnswerFromDropdown(${member.id}, this.value)">
+            <option value="" ${currentAnswer === '' ? 'selected' : ''}>선택하세요</option>
+            <option value="AA" ${currentAnswer === 'AA' ? 'selected' : ''}>AA</option>
+            <option value="Aa" ${currentAnswer === 'Aa' ? 'selected' : ''}>Aa</option>
+            <option value="aa" ${currentAnswer === 'aa' ? 'selected' : ''}>aa</option>
+            <option value="unknown" ${currentAnswer === 'unknown' ? 'selected' : ''}>모름</option>
+        </select>
+    `;
+    
+    document.body.appendChild(dropdown);
+    
+    // 위치 설정 (개체 위쪽에 표시)
+    dropdown.style.left = `${clientX - 75}px`;
+    dropdown.style.top = `${clientY - 100}px`;
+    
+    // 드롭다운 포커스
+    const select = dropdown.querySelector('select');
+    setTimeout(() => select.focus(), 100);
+}
+
+// 드롭다운 숨기기
+function hideDropdown() {
+    const dropdown = document.getElementById('floating-dropdown');
+    if (dropdown) {
+        dropdown.remove();
+    }
+}
+
+// 드롭다운에서 답변 저장
+function saveAnswerFromDropdown(memberId, answer) {
+    userAnswers[memberId] = answer;
+    
+    // 목록의 선택 박스도 업데이트
+    const listSelect = document.getElementById(`answer-${memberId}`);
+    if (listSelect) {
+        listSelect.value = answer;
+    }
+    
+    // 선택된 답변을 가계도에 표시
+    drawPedigree();
+    
+    // 드롭다운 숨기기
+    setTimeout(() => hideDropdown(), 300);
+}
+
+// 구성원 목록 업데이트
+function updateMemberList() {
+    if (!currentProblem) return;
+
+    const list = document.getElementById('memberList');
+    list.innerHTML = '';
+
+    currentProblem.members.forEach(member => {
+        const card = document.createElement('div');
+        card.className = `member-card ${member.affected ? 'affected' : ''}`;
+        card.id = `card-${member.id}`;
+        
+        const genderIcon = member.gender === 'male' ? '♂️' : '♀️';
+        const genderClass = member.gender === 'male' ? 'male' : 'female';
+        const phenotype = member.affected ? '열성 형질' : '우성 형질';
+        
+        card.innerHTML = `
+            <div class="member-info">
+                <div class="gender-icon ${genderClass}">${genderIcon}</div>
+                <span>개체 ${member.id} (${phenotype})</span>
+            </div>
+            <select id="answer-${member.id}" onchange="saveAnswer(${member.id}, this.value)">
+                <option value="">선택하세요</option>
+                <option value="AA">AA (우성 동형접합)</option>
+                <option value="Aa">Aa (이형접합)</option>
+                <option value="aa">aa (열성 동형접합)</option>
+                <option value="unknown">모름</option>
+            </select>
+        `;
+        
+        // 카드 클릭시 해당 개체 선택
+        card.addEventListener('click', (e) => {
+            if (e.target.tagName !== 'SELECT') {
+                const rect = document.getElementById('pedigreeCanvas').getBoundingClientRect();
+                showDropdownAtMember(member, rect.left + member.x, rect.top + member.y);
+            }
+        });
+        
+        list.appendChild(card);
+    });
+}
+
+// 답변 저장
+function saveAnswer(memberId, answer) {
+    userAnswers[memberId] = answer;
+    drawPedigree();
+}
+
+// 채점하기
+function checkAnswers() {
+    if (!currentProblem) return;
+
+    // 모든 개체가 입력되었는지 확인
+    const unanswered = [];
+    currentProblem.members.forEach(member => {
+        const userAnswer = userAnswers[member.id];
+        if (!userAnswer || userAnswer === '') {
+            unanswered.push(member.id);
+        }
+    });
+
+    if (unanswered.length > 0) {
+        alert(`모든 개체의 유전자형을 입력해주세요!\n입력하지 않은 개체: ${unanswered.join(', ')}\n\n모르는 경우 "모름"을 선택하세요.`);
+        return;
+    }
+
+    let correct = 0;
+    let total = currentProblem.members.length;
+    const details = [];
+
+    currentProblem.members.forEach(member => {
+        const userAnswer = userAnswers[member.id];
+        
+        // "모름"을 선택한 경우 특별 처리
+        if (userAnswer === 'unknown') {
+            // 실제로 확정할 수 없는 경우인지 체크
+            const canBeDetermined = canDetermineGenotype(member);
+            
+            if (!canBeDetermined) {
+                correct++;
+                details.push(`<div class="result-item">개체 ${member.id}: ✅ 정답 - 확정할 수 없음 (가능성: AA 또는 Aa)</div>`);
+            } else {
+                details.push(`<div class="result-item">개체 ${member.id}: ❌ 오답 - 확정 가능함, 정답: ${member.genotype}</div>`);
+            }
+        } else {
+            // 일반 답변 채점
+            if (userAnswer === member.genotype) {
+                correct++;
+                details.push(`<div class="result-item">개체 ${member.id}: ✅ 정답 (${member.genotype})</div>`);
+            } else {
+                details.push(`<div class="result-item">개체 ${member.id}: ❌ 오답 - 입력: ${userAnswer}, 정답: ${member.genotype}</div>`);
+            }
+        }
+    });
+
+    const resultsDiv = document.getElementById('results');
+    const percentage = Math.round((correct / total) * 100);
+    
+    let emoji = '💯';
+    let message = '완벽합니다!';
+    if (percentage < 50) {
+        emoji = '😢';
+        message = '조금 더 연습해보세요!';
+    } else if (percentage < 80) {
+        emoji = '😊';
+        message = '잘 하고 있어요!';
+    } else if (percentage < 100) {
+        emoji = '🎉';
+        message = '거의 다 맞혔어요!';
+    }
+
+    resultsDiv.innerHTML = `
+        <h2>${emoji} 채점 결과</h2>
+        <p>${message}</p>
+        <p style="font-size: 2em; font-weight: bold; margin: 20px 0;">정답률: ${percentage}% (${correct}/${total})</p>
+        <div class="result-details">
+            ${details.join('')}
+        </div>
+    `;
+    resultsDiv.style.display = 'block';
+    
+    // 결과로 스크롤
+    resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// 유전자형을 확정할 수 있는지 판단
+function canDetermineGenotype(member) {
+    // 열성 형질을 보이면 무조건 aa
+    if (member.affected) {
+        return true;
+    }
+    
+    // 우성 형질을 보이는 경우
+    // 자식 중에 aa가 있으면 부모는 반드시 Aa
+    const hasAffectedChild = hasChildWithGenotype(member, 'aa');
+    if (hasAffectedChild) {
+        return true;
+    }
+    
+    // 부모 중 한 명이 aa이고 자식이 우성이면 자식은 Aa
+    const hasAffectedParent = hasParentWithGenotype(member, 'aa');
+    if (hasAffectedParent) {
+        return true;
+    }
+    
+    // aa와 결혼해서 자식이 있고 모두 우성이면 AA
+    const spouseIsAffected = isSpouseAffected(member);
+    const allChildrenUnaffected = areAllChildrenUnaffected(member);
+    if (spouseIsAffected && allChildrenUnaffected && hasChildren(member)) {
+        return true;
+    }
+    
+    // 그 외의 경우는 AA인지 Aa인지 확정할 수 없음
+    return false;
+}
+
+// 자식 중에 특정 유전자형이 있는지 확인
+function hasChildWithGenotype(member, genotype) {
+    const childConnections = currentProblem.connections.filter(conn => 
+        conn.parent1 === member.id || conn.parent2 === member.id
+    );
+    
+    for (const conn of childConnections) {
+        if (conn.children) {
+            for (const childId of conn.children) {
+                const child = currentProblem.members.find(m => m.id === childId);
+                if (child && child.genotype === genotype) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+// 부모 중에 특정 유전자형이 있는지 확인
+function hasParentWithGenotype(member, genotype) {
+    const parentConnection = currentProblem.connections.find(conn => 
+        conn.children && conn.children.includes(member.id)
+    );
+    
+    if (parentConnection) {
+        const parent1 = currentProblem.members.find(m => m.id === parentConnection.parent1);
+        const parent2 = currentProblem.members.find(m => m.id === parentConnection.parent2);
+        
+        if ((parent1 && parent1.genotype === genotype) || (parent2 && parent2.genotype === genotype)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// 배우자가 열성인지 확인
+function isSpouseAffected(member) {
+    const marriageConn = currentProblem.connections.find(conn => 
+        conn.type === 'marriage' && (conn.from === member.id || conn.to === member.id)
+    );
+    
+    if (marriageConn) {
+        const spouseId = marriageConn.from === member.id ? marriageConn.to : marriageConn.from;
+        const spouse = currentProblem.members.find(m => m.id === spouseId);
+        return spouse && spouse.affected;
+    }
+    return false;
+}
+
+// 모든 자식이 우성인지 확인
+function areAllChildrenUnaffected(member) {
+    const childConnections = currentProblem.connections.filter(conn => 
+        (conn.parent1 === member.id || conn.parent2 === member.id) && conn.children
+    );
+    
+    if (childConnections.length === 0) return false;
+    
+    for (const conn of childConnections) {
+        for (const childId of conn.children) {
+            const child = currentProblem.members.find(m => m.id === childId);
+            if (child && child.affected) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+// 자식이 있는지 확인
+function hasChildren(member) {
+    const childConnections = currentProblem.connections.filter(conn => 
+        (conn.parent1 === member.id || conn.parent2 === member.id) && conn.children
+    );
+    return childConnections.length > 0 && childConnections.some(conn => conn.children.length > 0);
+}
+
+// 힌트 보기
+function showHintBox() {
+    const hintBox = document.getElementById('hintBox');
+    hintBox.style.display = hintBox.style.display === 'none' ? 'block' : 'none';
+    
+    if (hintBox.style.display === 'block') {
+        hintBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+}
+
+// 문제 초기화
+function resetProblem() {
+    if (!currentProblem) return;
+    
+    if (confirm('입력한 답변을 모두 지우고 다시 풀까요?')) {
+        userAnswers = {};
+        selectedMember = null;
+        
+        // 모든 선택 박스 초기화
+        currentProblem.members.forEach(member => {
+            const select = document.getElementById(`answer-${member.id}`);
+            if (select) {
+                select.value = '';
+            }
+        });
+        
+        document.getElementById('results').style.display = 'none';
+        document.getElementById('hintBox').style.display = 'none';
+        drawPedigree();
+    }
+}// 가계도 문제 데이터 - 모두 3세대 가정형
 const problems = [
     {
         id: 1,
