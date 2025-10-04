@@ -693,6 +693,12 @@ let currentProblem = null;
 let userAnswers = {};
 let selectedMember = null;
 
+// 전역 함수로 노출
+window.loadRandomProblem = loadRandomProblem;
+window.checkAnswers = checkAnswers;
+window.showHintBox = showHintBox;
+window.resetProblem = resetProblem;
+
 window.addEventListener('DOMContentLoaded', () => {
     displayProblemList();
     initCanvasClick();
@@ -941,7 +947,7 @@ function updateMemberList() {
                 <div class="gender-icon ${genderClass}">${genderIcon}</div>
                 <span>개체 ${member.id} (${phenotype})</span>
             </div>
-            <select id="answer-${member.id}" onchange="saveAnswer(${member.id}, this.value)">
+            <select id="answer-${member.id}">
                 <option value="">선택하세요</option>
                 <option value="AA">AA (우성 동형접합)</option>
                 <option value="Aa">Aa (이형접합)</option>
@@ -949,6 +955,11 @@ function updateMemberList() {
                 <option value="unknown">모름</option>
             </select>
         `;
+        
+        const select = card.querySelector('select');
+        select.addEventListener('change', (e) => {
+            saveAnswer(member.id, e.target.value);
+        });
         
         card.addEventListener('click', (e) => {
             if (e.target.tagName !== 'SELECT') {
