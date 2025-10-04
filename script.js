@@ -733,9 +733,14 @@ function displayProblemList() {
 }
 
 function loadProblem(problemId) {
+    console.log('📂 문제 로드 시작:', problemId);
     currentProblem = problems.find(p => p.id === problemId);
-    if (!currentProblem) return;
+    if (!currentProblem) {
+        console.log('❌ 문제를 찾을 수 없습니다:', problemId);
+        return;
+    }
 
+    console.log('✅ 문제 로드 성공:', currentProblem.title);
     userAnswers = {};
     selectedMember = null;
     
@@ -749,6 +754,7 @@ function loadProblem(problemId) {
     updateMemberList();
     initCanvasClick();
 
+    console.log('🎨 가계도 그리기 완료. 개체 수:', currentProblem.members.length);
     document.getElementById('currentProblem').scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -868,18 +874,19 @@ function initCanvasClick() {
         if (!currentProblem) return;
         
         const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const x = (e.clientX - rect.left) * scaleX;
+        const y = (e.clientY - rect.top) * scaleY;
         
         const hoveredMember = currentProblem.members.find(member => {
             const dx = x - member.x;
             const dy = y - member.y;
-            return Math.sqrt(dx * dx + dy * dy) < 25;
+            return Math.sqrt(dx * dx + dy * dy) < 35;
         });
         
         if (hoveredMember) {
             canvas.style.cursor = 'pointer';
-            console.log('👆 호버 중: 개체', hoveredMember.id);
         } else {
             canvas.style.cursor = 'default';
         }
@@ -892,17 +899,20 @@ function initCanvasClick() {
         }
         
         const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const x = (e.clientX - rect.left) * scaleX;
+        const y = (e.clientY - rect.top) * scaleY;
         
-        console.log('🖱️ 캔버스 클릭 위치:', x, y);
+        console.log('🖱️ 캔버스 클릭 위치 (스케일 조정됨):', x, y);
+        console.log('스케일:', scaleX, scaleY);
         
         const clickedMember = currentProblem.members.find(member => {
             const dx = x - member.x;
             const dy = y - member.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
-            console.log(`개체 ${member.id} 거리:`, distance);
-            return distance < 25;
+            console.log(`개체 ${member.id} (${member.x}, ${member.y}) 거리:`, distance);
+            return distance < 35;
         });
         
         if (clickedMember) {
@@ -916,6 +926,7 @@ function initCanvasClick() {
 }
 
 function showDropdownAtMember(member, clientX, clientY) {
+    console.log('🎯 드롭다운 표시 시도:', member.id);
     selectedMember = member.id;
     drawPedigree();
     hideDropdown();
@@ -941,8 +952,11 @@ function showDropdownAtMember(member, clientX, clientY) {
     dropdown.style.left = `${clientX - 75}px`;
     dropdown.style.top = `${clientY - 100}px`;
     
+    console.log('✅ 드롭다운 생성됨. 위치:', dropdown.style.left, dropdown.style.top);
+    
     const select = dropdown.querySelector('select');
     select.addEventListener('change', (e) => {
+        console.log('📝 선택된 값:', e.target.value);
         saveAnswerFromDropdown(member.id, e.target.value);
     });
     setTimeout(() => select.focus(), 100);
