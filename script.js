@@ -695,6 +695,7 @@ let selectedMember = null;
 
 window.addEventListener('DOMContentLoaded', () => {
     displayProblemList();
+    initCanvasClick();
 });
 
 function loadRandomProblem() {
@@ -740,6 +741,7 @@ function loadProblem(problemId) {
 
     drawPedigree();
     updateMemberList();
+    initCanvasClick();
 
     document.getElementById('currentProblem').scrollIntoView({ behavior: 'smooth' });
 }
@@ -884,7 +886,7 @@ function showDropdownAtMember(member, clientX, clientY) {
     
     dropdown.innerHTML = `
         <div class="dropdown-header">개체 ${member.id}</div>
-        <select id="floating-select" onchange="saveAnswerFromDropdown(${member.id}, this.value)">
+        <select id="floating-select">
             <option value="" ${currentAnswer === '' ? 'selected' : ''}>선택하세요</option>
             <option value="AA" ${currentAnswer === 'AA' ? 'selected' : ''}>AA</option>
             <option value="Aa" ${currentAnswer === 'Aa' ? 'selected' : ''}>Aa</option>
@@ -898,6 +900,9 @@ function showDropdownAtMember(member, clientX, clientY) {
     dropdown.style.top = `${clientY - 100}px`;
     
     const select = dropdown.querySelector('select');
+    select.addEventListener('change', (e) => {
+        saveAnswerFromDropdown(member.id, e.target.value);
+    });
     setTimeout(() => select.focus(), 100);
 }
 
