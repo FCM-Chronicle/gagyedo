@@ -856,24 +856,60 @@ function createHatchPattern() {
 
 function initCanvasClick() {
     const canvas = document.getElementById('pedigreeCanvas');
-    if (!canvas) return;
+    if (!canvas) {
+        console.log('❌ 캔버스를 찾을 수 없습니다');
+        return;
+    }
     
-    canvas.addEventListener('click', (e) => {
+    console.log('✅ 캔버스 클릭 이벤트 초기화 완료');
+    
+    // 마우스 호버 효과
+    canvas.addEventListener('mousemove', (e) => {
         if (!currentProblem) return;
         
         const rect = canvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
         
-        const clickedMember = currentProblem.members.find(member => {
+        const hoveredMember = currentProblem.members.find(member => {
             const dx = x - member.x;
             const dy = y - member.y;
             return Math.sqrt(dx * dx + dy * dy) < 25;
         });
         
+        if (hoveredMember) {
+            canvas.style.cursor = 'pointer';
+            console.log('👆 호버 중: 개체', hoveredMember.id);
+        } else {
+            canvas.style.cursor = 'default';
+        }
+    });
+    
+    canvas.addEventListener('click', (e) => {
+        if (!currentProblem) {
+            console.log('⚠️ 문제가 로드되지 않았습니다');
+            return;
+        }
+        
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        console.log('🖱️ 캔버스 클릭 위치:', x, y);
+        
+        const clickedMember = currentProblem.members.find(member => {
+            const dx = x - member.x;
+            const dy = y - member.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            console.log(`개체 ${member.id} 거리:`, distance);
+            return distance < 25;
+        });
+        
         if (clickedMember) {
+            console.log('✅ 개체 클릭됨:', clickedMember.id);
             showDropdownAtMember(clickedMember, e.clientX, e.clientY);
         } else {
+            console.log('❌ 빈 공간 클릭');
             hideDropdown();
         }
     });
