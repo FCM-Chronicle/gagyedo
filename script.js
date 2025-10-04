@@ -846,8 +846,9 @@ function createHatchPattern() {
     return patternCanvas;
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+function initCanvasClick() {
     const canvas = document.getElementById('pedigreeCanvas');
+    if (!canvas) return;
     
     canvas.addEventListener('click', (e) => {
         if (!currentProblem) return;
@@ -868,7 +869,7 @@ document.addEventListener('DOMContentLoaded', () => {
             hideDropdown();
         }
     });
-});
+}
 
 function showDropdownAtMember(member, clientX, clientY) {
     selectedMember = member.id;
