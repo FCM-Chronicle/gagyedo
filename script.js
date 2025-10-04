@@ -776,7 +776,7 @@ function resetProblem() {
         document.getElementById('hintBox').style.display = 'none';
         drawPedigree();
     }
-}' },
+}
             { from: 3, to: 4, type: 'marriage' },
             { from: 5, to: 6, type: 'marriage' },
             { parent1: 1, parent2: 2, children: [5] },
